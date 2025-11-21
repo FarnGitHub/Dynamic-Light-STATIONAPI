@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "dynamic_light",
+  "version": "${version}",
+
+  "name": "Dynamic Light",
+  "description": "Certain item now emit light when held",
+  "authors": [
+    "farnfarn02"
+  ],
+  "license": "MIT",
+  "icon": "assets/dynamic_light/icon.png",
+
+  "environment": "client",
+  "entrypoints": {
+    "stationapi:event_bus_client": [
+      "farn.dynamicLight.DynamicLight"
+    ],
+    "modmenu": [
+      "farn.dynamicLight.other.config.ModMenuHandler"
+    ]
+  },
+  "mixins": [
+    "dynamiclight.mixins.json"
+  ],
+
+  "depends": {
+    "minecraft": "1.0.0-beta.7.3"
+  }
+}
