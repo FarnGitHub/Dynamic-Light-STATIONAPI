@@ -44,16 +44,9 @@ public class Config {
 
             BufferedReader in = new BufferedReader(new FileReader(settingsFile));
             String sCurrentLine;
-            int[][] newLightData = new int[64][5];
-            int i = 0;
 
             while ((sCurrentLine = in.readLine()) != null) {
                 if (sCurrentLine.startsWith("#")) continue;
-
-                if(sCurrentLine.startsWith("enabled")) {
-
-                }
-
                 String[] curLine = sCurrentLine.split(":");
 
                 int id;
