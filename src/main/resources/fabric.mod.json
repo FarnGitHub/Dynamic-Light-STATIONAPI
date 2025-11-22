@@ -10,11 +10,13 @@
   ],
   "license": "MIT",
   "icon": "assets/dynamic_light/icon.png",
-
   "environment": "client",
   "entrypoints": {
     "stationapi:event_bus_client": [
       "farn.dynamicLight.DynamicLight"
+    ],
+    "dynamiclight_reset": [
+      "farn.dynamicLight.other.mod.DynamicLightDefaultRegister"
     ],
     "modmenu": [
       "farn.dynamicLight.other.config.ModMenuHandler"

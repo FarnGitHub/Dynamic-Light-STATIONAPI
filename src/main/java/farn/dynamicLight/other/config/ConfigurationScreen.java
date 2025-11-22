@@ -36,7 +36,7 @@ public class ConfigurationScreen extends Screen {
             }
         } else {
             if(guibutton.id == 1) {
-                Config.writeDefaultSettingFile();
+                Config.writeDefaultSettingFile(true);
             }
             this.minecraft.setScreen(parent);
         }

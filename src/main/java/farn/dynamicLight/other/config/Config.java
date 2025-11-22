@@ -2,12 +2,14 @@ package farn.dynamicLight.other.config;
 
 import farn.dynamicLight.DynamicLight;
 import farn.dynamicLight.other.cache.ItemLightData;
+import farn.dynamicLight.other.mod.DynamicLightEntryPoint;
 import farn.dynamicLight.other.world.Dispatcher;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.block.Block;
+import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
 import net.minecraft.item.Item;
 
 import java.io.*;
+import java.util.Map;
 
 public class Config {
 
@@ -24,7 +26,8 @@ public class Config {
         }
 
         if(!settingsFile.exists()) {
-            writeDefaultSettingFile();
+            putDefaultItemLightDataMap();
+            writeDefaultSettingFile(true);
         }
 
         readSettingFile(doResetLight);
@@ -46,6 +49,10 @@ public class Config {
 
             while ((sCurrentLine = in.readLine()) != null) {
                 if (sCurrentLine.startsWith("#")) continue;
+
+                if(sCurrentLine.startsWith("enabled")) {
+
+                }
 
                 String[] curLine = sCurrentLine.split(":");
 
@@ -69,7 +76,7 @@ public class Config {
                 if (curLine.length > 4)
                     underwater = curLine[4].equals("true"); // Work UnderWater
 
-                Dispatcher.lightdataMap.put(id,new ItemLightData(brightness, range, deathAge, underwater));
+                Dispatcher.lightdataMap.put(id,new ItemLightData(id, brightness, range, deathAge, underwater));
                 DynamicLight.LOGGER.info(id);
             }
             in.close();
@@ -79,31 +86,34 @@ public class Config {
         }
     }
 
-    public static void writeDefaultSettingFile() {
+    public static void writeDefaultSettingFile(boolean reset) {
+        if(reset) putDefaultItemLightDataMap();
         try {
             PrintWriter configWriter = new PrintWriter(new FileWriter(settingsFile));
             configWriter.println("#Format (note: ItemLightTimeLimit and WorksUnderwater are optional)");
             configWriter.println("#ItemID:MaximumBrightness:LightRange:ItemLightTimeLimit:WorksUnderwater(true:false)");
             configWriter.println(" ");
             configWriter.println(" ");
-            configWriter.println("#Torch");
-            configWriter.println(Block.TORCH.id + ":15:31:-1:false");
-            configWriter.println("#Glowstone dust");
-            configWriter.println(Item.GLOWSTONE_DUST.id + ":10:21");
-            configWriter.println("#Glowstone");
-            configWriter.println(Block.GLOWSTONE.id + ":12:25");
-            configWriter.println("#Jack o Lantern");
-            configWriter.println(Block.JACK_O_LANTERN.id + ":15:31");
-            configWriter.println("#Bucket of Lava");
-            configWriter.println(Item.LAVA_BUCKET.id + ":15:31");
-            configWriter.println("#Redstone Torch");
-            configWriter.println(Block.REDSTONE_TORCH.id + ":10:21");
-            configWriter.println("#Redstone Ore (Stone)");
-            configWriter.println(Block.REDSTONE_ORE.id + ":10:21");
+            for(Map.Entry<Integer, ItemLightData> dataEntry: Dispatcher.lightdataMap.entrySet()) {
+                configWriter.println("#" + Item.ITEMS[dataEntry.getKey()].getTranslatedName());
+                ItemLightData data = dataEntry.getValue();
+                configWriter.println(formatSetting(dataEntry.getKey(), data.brightness, data.range, data.deathAge, data.underwater));
+            }
             configWriter.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static void putDefaultItemLightDataMap() {
+        Dispatcher.lightdataMap.clear();
+        for (EntrypointContainer<DynamicLightEntryPoint> entrypoint : FabricLoader.getInstance().getEntrypointContainers("dynamiclight_reset", DynamicLightEntryPoint.class)) {
+            entrypoint.getEntrypoint().onDefaultConfig(Dispatcher.lightdataMap);
+        }
+    }
+
+    public static String formatSetting(int id, int brightness, int range, int deathage, boolean underWater) {
+        return String.format("%d:%d:%d:%d:%b", id, brightness, range, deathage, underWater);
     }
 
 }
