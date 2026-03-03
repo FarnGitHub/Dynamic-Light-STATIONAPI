@@ -1,13 +1,25 @@
 package farn.dynamicLight;
 
-import farn.dynamicLight.other.config.Config;
+import farn.dynamicLight.config.DynamicLightLoader;
+import farn.dynamicLight.resource.DynamicLightReloader;
+import farn.dynamicLight.world.WorldTick;
+import net.fabricmc.loader.api.FabricLoader;
 import net.mine_diver.unsafeevents.listener.EventListener;
+import net.mine_diver.unsafeevents.listener.ListenerPriority;
+import net.minecraft.client.Minecraft;
 import net.modificationstation.stationapi.api.event.mod.InitEvent;
+import net.modificationstation.stationapi.api.event.resource.DataReloadEvent;
+import net.modificationstation.stationapi.api.event.resource.DataResourceReloaderRegisterEvent;
+import net.modificationstation.stationapi.api.event.tick.GameTickEvent;
 import net.modificationstation.stationapi.api.mod.entrypoint.Entrypoint;
+import net.modificationstation.stationapi.api.mod.entrypoint.EntrypointManager;
+import net.modificationstation.stationapi.api.resource.DataManager;
 import net.modificationstation.stationapi.api.util.Namespace;
 import net.modificationstation.stationapi.api.util.Null;
+import net.modificationstation.stationapi.api.util.profiler.DummyProfiler;
 import org.apache.logging.log4j.Logger;
 
+@SuppressWarnings("unused")
 public class DynamicLight {
     @Entrypoint.Namespace
     public static Namespace NAMESPACE;
@@ -16,10 +28,29 @@ public class DynamicLight {
     public static Logger LOGGER = Null.get();
 
     @EventListener
-    public void onInitializeClient(InitEvent event) {
-        LOGGER.info("Dynamic Light Mod initialized.");
-        Config.initializeSettingsFile(false);
+    public void initFinished(InitEvent e) {
+        FabricLoader.getInstance().getEntrypointContainers("dynamic_light:before_init", Object.class).forEach(EntrypointManager::setup);
     }
 
+    @EventListener
+    public void registerReloader(DataResourceReloaderRegisterEvent e) {
+        e.resourceManager.registerReloader(DynamicLightReloader.INSTANCE);
+    }
 
+    @EventListener(priority = ListenerPriority.LOWEST)
+    public void dataEvent(DataReloadEvent event) {
+        DynamicLightReloader.INSTANCE.apply(
+                DynamicLightReloader.INSTANCE.prepare(
+                        DataManager.INSTANCE,
+                        DummyProfiler.INSTANCE),
+                DataManager.INSTANCE,
+                DummyProfiler.INSTANCE
+        );
+    }
+
+    @EventListener
+    public static void worldTick(GameTickEvent.End ev) {
+        if(Minecraft.INSTANCE.world != null && !DynamicLightLoader.reloading)
+            WorldTick.tick(Minecraft.INSTANCE);
+    }
 }

@@ -1,21 +1,24 @@
-package farn.dynamicLight.other.mixin;
+package farn.dynamicLight.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import farn.dynamicLight.other.cache.LightCache;
-import farn.dynamicLight.other.world.Dispatcher;
+import farn.dynamicLight.cache.LightCache;
+import farn.dynamicLight.world.Dispatcher;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldRegion;
-import org.spongepowered.asm.mixin.Shadow;
+import net.minecraft.world.dimension.Dimension;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(value = WorldRegion.class)
-public class WorldRegionMixin {
+@Mixin(World.class)
+public abstract class WorldMixin {
 
     @Shadow
-    World world;
+    public abstract int getLightLevel(int x, int y, int z);
 
-    public WorldRegion chunkCache = (WorldRegion)(Object)this;
+    @Shadow
+    @Final
+    public Dimension dimension;
 
     /**
      * @author AtomicStryker
@@ -30,24 +33,24 @@ public class WorldRegionMixin {
             return lc;
         }
 
-        int lightValue = chunkCache.getRawBrightness(i, j, k);
-        float torchLight = Dispatcher.getLightBrightness(world, i, j, k);
+        int lightValue = getLightLevel(i, j, k);
+        float torchLight = Dispatcher.getBrightness(i, j, k);
         if(lightValue < torchLight)
         {
             int floorValue = (int)java.lang.Math.floor(torchLight);
             if(floorValue==15)
             {
-                return world.dimension.lightLevelToLuminance[15];
+                return dimension.lightLevelToLuminance[15];
             }
             else
             {
                 int ceilValue = (int)java.lang.Math.ceil(torchLight);
                 float lerpValue = torchLight-floorValue;
-                return (1.0f-lerpValue)* world.dimension.lightLevelToLuminance[floorValue]+lerpValue* world.dimension.lightLevelToLuminance[ceilValue];
+                return (1.0f-lerpValue)*dimension.lightLevelToLuminance[floorValue]+lerpValue*dimension.lightLevelToLuminance[ceilValue];
             }
         }
 
-        lc = world.dimension.lightLevelToLuminance[lightValue];
+        lc = dimension.lightLevelToLuminance[lightValue];
         LightCache.setLightValue(i, j, k, lc);
         return lc;
     }
@@ -65,24 +68,24 @@ public class WorldRegionMixin {
             return lc;
         }
 
-        int lightValue = chunkCache.getRawBrightness(i, j, k);
-        float torchLight = Dispatcher.getLightBrightness(world, i, j, k);
+        int lightValue = getLightLevel(i, j, k);
+        float torchLight = Dispatcher.getBrightness(i, j, k);
         if(lightValue < torchLight)
         {
             int floorValue = (int)java.lang.Math.floor(torchLight);
             if(floorValue==15)
             {
-                return world.dimension.lightLevelToLuminance[15];
+                return dimension.lightLevelToLuminance[15];
             }
             else
             {
                 int ceilValue = (int)java.lang.Math.ceil(torchLight);
                 float lerpValue = torchLight-floorValue;
-                return (1.0f-lerpValue)* world.dimension.lightLevelToLuminance[floorValue]+lerpValue* world.dimension.lightLevelToLuminance[ceilValue];
+                return (1.0f-lerpValue)*dimension.lightLevelToLuminance[floorValue]+lerpValue*dimension.lightLevelToLuminance[ceilValue];
             }
         }
 
-        lc = world.dimension.lightLevelToLuminance[lightValue];
+        lc = dimension.lightLevelToLuminance[lightValue];
         LightCache.setLightValue(i, j, k, lc);
         return lc;
     }

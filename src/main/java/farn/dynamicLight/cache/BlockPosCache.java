@@ -1,4 +1,4 @@
-package farn.dynamicLight.other.cache;
+package farn.dynamicLight.cache;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,18 +14,19 @@ public final class BlockPosCache
         z = k;
     }
     
-    public static BlockPosCache getFromPool(int i, int j, int k)
+    public static BlockPosCache get(int i, int j, int k)
     {
-        if(numBlockCoordsInUse >= blockCoords.size())
+        if(currentIndex >= caches.size())
         {
-            blockCoords.add(new BlockPosCache(i, j, k));
+            caches.add(new BlockPosCache(i, j, k));
         }
-        return (blockCoords.get(numBlockCoordsInUse++)).set(i, j, k);
+        return (caches.get(currentIndex++)).set(i, j, k);
     }
     
-    public static void resetPool()
+    public static void clear()
     {
-        numBlockCoordsInUse = 0;
+        currentIndex = 0;
+        if(caches.size() == Integer.MAX_VALUE) caches.clear();
     }
     
     public BlockPosCache set(int i, int j, int k)
@@ -36,7 +37,7 @@ public final class BlockPosCache
         return this;
     }
     
-    public boolean isEqual(int i, int j, int k)
+    public boolean equals(int i, int j, int k)
     {
         return x == i && y == j && z == k;
     }
@@ -44,9 +45,9 @@ public final class BlockPosCache
     @Override
     public boolean equals(Object obj)
     {
-        if(obj instanceof BlockPosCache otherCoord)
+        if(obj instanceof BlockPosCache other)
         {
-            return x == otherCoord.x && y == otherCoord.y && z == otherCoord.z;
+            return x == other.x && y == other.y && z == other.z;
         } else
         {
             return false;
@@ -63,6 +64,6 @@ public final class BlockPosCache
     public int y;
     public int z;
     
-    private static final List<BlockPosCache> blockCoords = new ArrayList<>();
-    public static int numBlockCoordsInUse = 0;
+    private static final List<BlockPosCache> caches = new ArrayList<>();
+    public static int currentIndex = 0;
 }

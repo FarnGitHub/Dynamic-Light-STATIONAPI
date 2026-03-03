@@ -1,0 +1,7 @@
+{
+  "identifier" : "minecraft:glowstone",
+  "brightness" : 12,
+  "range": 25,
+  "timer": -1,
+  "underwater": true
+}

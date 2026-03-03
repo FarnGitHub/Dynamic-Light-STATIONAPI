@@ -1,4 +1,6 @@
-package farn.dynamicLight.other.cache;
+package farn.dynamicLight.cache;
+
+import java.util.Arrays;
 
 public class LightCache
 {
@@ -10,19 +12,17 @@ public class LightCache
     
     public static void clear()
     {
-        for(int i=0; i<cacheSize; ++i)
-            coords[i] = null;
+        Arrays.fill(coords, null);
     }
 
     private static int calcHash(int x, int y, int z) {
         final int m = 0x5bd1e995;
-        final int r = 24;
 
         int h = 1234567890;
 
-        h ^= mixHash(x, m, r);
-        h ^= mixHash(y, m, r);
-        h ^= mixHash(z, m, r);
+        h ^= mixHash(x);
+        h ^= mixHash(y);
+        h ^= mixHash(z);
 
         h ^= h >>> 13;
         h *= m;
@@ -31,7 +31,9 @@ public class LightCache
         return h;
     }
 
-    private static int mixHash(int k, int m, int r) {
+    private static int mixHash(int k) {
+        final int m = 0x5bd1e995;
+        final int r = 24;
         int h = k * m;
         h ^= h >>> r;
         h *= m;
@@ -41,10 +43,9 @@ public class LightCache
     private static int findEntry(int x, int y, int z)
     {
         int i = Math.abs(calcHash(x, y, z))%cacheSize;
-        int h = i;
         int j = 0;
         
-        while(coords[i] != null && !coords[i].isEqual(x, y, z))
+        while(coords[i] != null && !coords[i].equals(x, y, z))
         {
             i = (i+1)%cacheSize;
             if(j++>cacheSize)
@@ -71,15 +72,10 @@ public class LightCache
     public static void setLightValue(int x, int y, int z, float l)
     {
         int i = findEntry(x, y, z);
-        coords[i] = BlockPosCache.getFromPool(x, y, z);
+        coords[i] = BlockPosCache.get(x, y, z);
         lightValues[i] = l;
     }
     
-    static BlockPosCache coords[];
-    static float lightValues[];
-
-    static {
-        coords = new BlockPosCache[cacheSize];
-        lightValues = new float[cacheSize];
-    }
+    static BlockPosCache[] coords = new BlockPosCache[cacheSize];
+    static float[] lightValues = new float[cacheSize];
 }

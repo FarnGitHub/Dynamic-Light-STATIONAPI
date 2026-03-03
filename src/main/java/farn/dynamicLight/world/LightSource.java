@@ -1,4 +1,4 @@
-package farn.dynamicLight.other.world;
+package farn.dynamicLight.world;
 
 
 import net.minecraft.block.Block;
@@ -10,20 +10,19 @@ import net.minecraft.world.World;
 public class LightSource
 {
 	boolean isLit = false;
-	float posX;
-	float posY;
-	float posZ;
+	double posX;
+	double posY;
+	double posZ;
 	int iX;
 	int iY;
 	int iZ;
 	private int brightness = 15;
 	private int range = brightness * 2 + 1;
 	float[] cache = new float[range * range * range];
-	private Entity target;
+	private final Entity target;
 	public int currentItemID = 0;
 	private boolean worksUnderwater = true;
-	public int deathAge = -1;
-	public boolean canArmorLit = false;
+	public int timer = -1;
 	private long updateTime;
 
     public LightSource(Entity entity)
@@ -31,20 +30,20 @@ public class LightSource
 		target = entity;
     }
 
-    public boolean isTorchActive()
+    public boolean active()
     {
-        return (isLit && target.isAlive() && !IsPutOutByWater());
+        return (isLit && target.isAlive() && !notWorkUnderwater());
     }
 
-    public void setTorchState(World world, boolean flag)
+    public void setState(World world, boolean flag)
     {
 		if(this.isLit != flag) {
 			this.isLit = flag;
-			this.markBlocksDirty(world, true);
+			this.markDirty(world, true);
 		}
     }
 
-    public void setTorchPos(World world, float x, float y, float z)
+    public void setPos(World world, double x, double y, double z)
     {
             posX = x;
             posY = y;
@@ -52,12 +51,12 @@ public class LightSource
             iX = (int)posX;
             iY = (int)posY;
             iZ = (int)posZ;
-			markBlocksDirty(world);
+			markDirty(world);
     }
 
-	public float getTorchLight(World world, int x, int y, int z)
+	public float getLight(int x, int y, int z)
 	{
-		if (isLit && !IsPutOutByWater())
+		if (isLit && !notWorkUnderwater())
 		{		
 			int diffX = x - iX + brightness;
 			int diffY = y - iY + brightness;
@@ -70,22 +69,23 @@ public class LightSource
 		}
 		return 0.0F;
 	}
-	
-	private boolean IsPutOutByWater()
+
+	@SuppressWarnings("all")
+	private boolean notWorkUnderwater()
 	{
 		return (!worksUnderwater && target.isInFluid(Material.WATER));
 	}
 
-	private void markBlocksDirty(World var1)
+	private void markDirty(World var1)
 	{
-		markBlocksDirty(var1, false);
+		markDirty(var1, false);
 	}
 
-    private void markBlocksDirty(World world, boolean forceUpdate)
+    private void markDirty(World world, boolean forceUpdate)
     {
-        float XDiff = posX - iX;
-        float YDiff = posY - iY;
-        float ZDiff = posZ - iZ;
+        double XDiff = posX - iX;
+        double YDiff = posY - iY;
+        double ZDiff = posZ - iZ;
         int index = 0;
 		if (System.currentTimeMillis() < this.updateTime+100L && !forceUpdate) return;
 
@@ -126,48 +126,48 @@ public class LightSource
 		this.updateTime = System.currentTimeMillis();
 	}
 	
-	public void SetTorchBrightness(int i)
+	public void setBrightness(int i)
 	{
 		brightness = i;
 	}
 	
-	public int GetTorchBrightness()
+	public int getBrightness()
 	{
 		return brightness;
 	}
 	
-	public void SetTorchRange(int i)
+	public void setRange(int i)
 	{
 		range = i;
 	}
 	
-	public Entity GetTorchEntity()
+	public Entity getEntity()
 	{
 		return target;
 	}
 	
-	public void SetWorksUnderwater(boolean works)
+	public void setWorkUnderWater(boolean works)
 	{
 		worksUnderwater = works;
 	}
 	
-	public void setDeathAge(int age)
+	public void setTimer(int age)
 	{
-		deathAge = age;
+		timer = age;
 	}
 	
-	public void doAgeTick()
+	public void timerTick()
 	{
-		deathAge--;
+		timer--;
 	}
 	
-	public boolean hasDeathAge()
+	public boolean hasNoTimer()
 	{
-		return (deathAge != -1);
+		return (timer != -1);
 	}
 	
-	public boolean hasReachedDeathAge()
+	public boolean isDead()
 	{
-		return (deathAge == 0);
+		return (timer == 0);
 	}
 }

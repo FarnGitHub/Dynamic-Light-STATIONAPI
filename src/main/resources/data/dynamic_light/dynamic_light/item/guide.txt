@@ -1,0 +1,5 @@
+identifier : StationAPI item's identifier
+brightness : The brightness of the item
+range : The range of the item
+timer : how long is last (-1 mean no timer)
+underwater : should it work in underwater (true or false)

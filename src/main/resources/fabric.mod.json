@@ -15,17 +15,14 @@
     "stationapi:event_bus_client": [
       "farn.dynamicLight.DynamicLight"
     ],
-    "dynamiclight_reset": [
-      "farn.dynamicLight.other.mod.DynamicLightDefaultRegister"
-    ],
     "modmenu": [
-      "farn.dynamicLight.other.config.ModMenuHandler"
+      "farn.dynamicLight.config.screen.ModMenuHandler"
     ]
   },
+  "accessWidener": "dynamiclight.classTweaker",
   "mixins": [
     "dynamiclight.mixins.json"
   ],
-
   "depends": {
     "minecraft": "1.0.0-beta.7.3"
   }

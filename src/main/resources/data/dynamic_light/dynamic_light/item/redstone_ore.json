@@ -1,0 +1,7 @@
+{
+  "identifier" : "minecraft:redstone_ore_lit",
+  "brightness" : 10,
+  "range": 21,
+  "timer": -1,
+  "underwater": true
+}

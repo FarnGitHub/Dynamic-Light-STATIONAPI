@@ -1,16 +1,22 @@
-package farn.dynamicLight.other.mixin;
+package farn.dynamicLight.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import farn.dynamicLight.other.cache.LightCache;
-import farn.dynamicLight.other.world.Dispatcher;
+import farn.dynamicLight.cache.LightCache;
+import farn.dynamicLight.world.Dispatcher;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldRegion;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(value = World.class)
-public class WorldMixin {
+@Mixin(WorldRegion.class)
+public abstract class WorldRegionMixin {
 
-    public World world = (World)(Object)this;
+    @Shadow
+    private World world;
+
+    @Shadow
+    public abstract int getRawBrightness(int x, int y, int z);
 
     /**
      * @author AtomicStryker
@@ -25,8 +31,8 @@ public class WorldMixin {
             return lc;
         }
 
-        int lightValue = world.getLightLevel(i, j, k);
-        float torchLight = Dispatcher.getLightBrightness(world, i, j, k);
+        int lightValue = getRawBrightness(i, j, k);
+        float torchLight = Dispatcher.getBrightness(i, j, k);
         if(lightValue < torchLight)
         {
             int floorValue = (int)java.lang.Math.floor(torchLight);
@@ -38,7 +44,7 @@ public class WorldMixin {
             {
                 int ceilValue = (int)java.lang.Math.ceil(torchLight);
                 float lerpValue = torchLight-floorValue;
-                return (1.0f-lerpValue)*world.dimension.lightLevelToLuminance[floorValue]+lerpValue*world.dimension.lightLevelToLuminance[ceilValue];
+                return (1.0f-lerpValue)* world.dimension.lightLevelToLuminance[floorValue]+lerpValue* world.dimension.lightLevelToLuminance[ceilValue];
             }
         }
 
@@ -60,8 +66,8 @@ public class WorldMixin {
             return lc;
         }
 
-        int lightValue = world.getLightLevel(i, j, k);
-        float torchLight = Dispatcher.getLightBrightness(world, i, j, k);
+        int lightValue = getRawBrightness(i, j, k);
+        float torchLight = Dispatcher.getBrightness(i, j, k);
         if(lightValue < torchLight)
         {
             int floorValue = (int)java.lang.Math.floor(torchLight);
@@ -73,7 +79,7 @@ public class WorldMixin {
             {
                 int ceilValue = (int)java.lang.Math.ceil(torchLight);
                 float lerpValue = torchLight-floorValue;
-                return (1.0f-lerpValue)*world.dimension.lightLevelToLuminance[floorValue]+lerpValue*world.dimension.lightLevelToLuminance[ceilValue];
+                return (1.0f-lerpValue)* world.dimension.lightLevelToLuminance[floorValue]+lerpValue* world.dimension.lightLevelToLuminance[ceilValue];
             }
         }
 
