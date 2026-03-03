@@ -19,7 +19,7 @@ public class DynamicLightLoader {
     public static boolean reloading = false;
 
     public static final Properties properties = new Properties();
-    public static final File configFile = new File(FabricLoader.getInstance().getConfigDir().toString(), "dynamic_light.prop");
+    public static final File configFile = new File(FabricLoader.getInstance().getConfigDir().toString(), "dynamic_light_enables.cfg");
 
     public static ItemLightData parseFromJson(Resource resource) throws IOException {
          return new Gson().fromJson(resource.getReader(), ItemLightData.class);
