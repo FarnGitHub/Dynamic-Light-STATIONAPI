@@ -3,6 +3,7 @@ package farn.dynamicLight.world;
 import farn.dynamicLight.cache.ItemLightData;
 import farn.dynamicLight.cache.BlockPosCache;
 import farn.dynamicLight.cache.LightCache;
+import farn.dynamicLight.config.DynamicLightLoader;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.entity.Entity;
@@ -17,30 +18,29 @@ public class Dispatcher
 {
 	public static final List<LightSource> lightSources = new ArrayList<>();
 	public static List<Entity> entitys = new ArrayList<>();
-	public static Int2ObjectMap<ItemLightData> lightdataMap = new Int2ObjectArrayMap<>();
 	public static Queue<Runnable> tickScheduler = new ConcurrentLinkedQueue<>();
 
 	public static int getBrightness(int ID)
 	{
-		ItemLightData data = lightdataMap.get(ID);
+		ItemLightData data = DynamicLightLoader.lightdataMap.get(ID);
 		return data != null && data.enabled ? data.brightness : 0;
 	}
 	
 	public static int getRange(int ID)
 	{
-		ItemLightData data = lightdataMap.get(ID);
+		ItemLightData data = DynamicLightLoader.lightdataMap.get(ID);
 		return data != null && data.enabled ? data.range : 0;
 	}
 	
 	public static int getTimer(int ID)
 	{
-		ItemLightData data = lightdataMap.get(ID);
+		ItemLightData data = DynamicLightLoader.lightdataMap.get(ID);
 		return data != null && data.enabled ? data.timer : -1;
 	}
 	
 	public static boolean workUnderWater(int ID)
 	{
-		ItemLightData data = lightdataMap.get(ID);
+		ItemLightData data = DynamicLightLoader.lightdataMap.get(ID);
 		return data != null && data.underwater;
 	}
 	

@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import farn.dynamicLight.DynamicLight;
 import farn.dynamicLight.cache.ItemLightData;
 import farn.dynamicLight.world.Dispatcher;
+import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.item.Item;
@@ -20,6 +21,7 @@ public class DynamicLightLoader {
 
     public static final Properties properties = new Properties();
     public static final File configFile = new File(FabricLoader.getInstance().getConfigDir().toString(), "dynamic_light_enables.cfg");
+    public static Int2ObjectMap<ItemLightData> lightdataMap = new Int2ObjectArrayMap<>();
 
     public static ItemLightData parseFromJson(Resource resource) throws IOException {
          return new Gson().fromJson(resource.getReader(), ItemLightData.class);
@@ -27,7 +29,7 @@ public class DynamicLightLoader {
 
     public static void reload(Map<Identifier, Resource> prepared) {
         reloading = true;
-        Dispatcher.lightdataMap.clear();
+        lightdataMap.clear();
         clearAllCache();
         prepared.forEach((iden, resource) -> {
             ItemLightData data = null;
@@ -44,7 +46,7 @@ public class DynamicLightLoader {
                 data.itemNames = data.identifier;
             }
             DynamicLight.LOGGER.info("Add Dynamic light from {}", iden);
-            Dispatcher.lightdataMap.put(data.getItemId(), data);
+            lightdataMap.put(data.getItemId(), data);
         });
         readConfig(false);
         reloading = false;
@@ -63,10 +65,10 @@ public class DynamicLightLoader {
 
         try (FileInputStream in = new FileInputStream(configFile)) {
             properties.load(in);
-            for(Int2ObjectMap.Entry<ItemLightData> dataEntry: Dispatcher.lightdataMap.int2ObjectEntrySet()) {
+            for(Int2ObjectMap.Entry<ItemLightData> dataEntry: lightdataMap.int2ObjectEntrySet()) {
                 dataEntry.getValue().enabled = properties.getProperty(dataEntry.getValue().identifier, "true").equals("true");
             }
-        } catch (IOException e) {
+        } catch (IOException ignored) {
         }
     }
 
@@ -79,11 +81,11 @@ public class DynamicLightLoader {
 
     public static void writeConfig() {
         try (FileOutputStream out = new FileOutputStream(configFile)) {
-            for(Int2ObjectMap.Entry<ItemLightData> dataEntry: Dispatcher.lightdataMap.int2ObjectEntrySet()) {
+            for(Int2ObjectMap.Entry<ItemLightData> dataEntry: lightdataMap.int2ObjectEntrySet()) {
                 properties.setProperty(dataEntry.getValue().identifier, dataEntry.getValue().enabled + "");
             }
             properties.store(out, "Dynamic Light Config");
-        } catch (IOException e) {
+        } catch (IOException ignored) {
         }
     }
 }

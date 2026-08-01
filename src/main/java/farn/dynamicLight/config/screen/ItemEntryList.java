@@ -1,6 +1,7 @@
 package farn.dynamicLight.config.screen;
 
 import farn.dynamicLight.cache.ItemLightData;
+import farn.dynamicLight.config.DynamicLightLoader;
 import farn.dynamicLight.world.Dispatcher;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -17,7 +18,7 @@ public class ItemEntryList extends EntryListWidget {
     public ItemEntryList(Screen screen) {
         super(Minecraft.INSTANCE, screen.width, screen.height, 8, screen.height - 55 + 4, 24);
         this.screen = screen;
-        for(Int2ObjectMap.Entry<ItemLightData> dataEntry: Dispatcher.lightdataMap.int2ObjectEntrySet()) {
+        for(Int2ObjectMap.Entry<ItemLightData> dataEntry: DynamicLightLoader.lightdataMap.int2ObjectEntrySet()) {
             items.add(dataEntry.getValue());
         }
     }
