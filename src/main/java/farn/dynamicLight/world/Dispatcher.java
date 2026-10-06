@@ -10,7 +10,8 @@ import java.util.*;
 public class Dispatcher
 {
 	public static final List<LightSource> lightSources = new ArrayList<>();
-	public static LightSource[] soredLightSources;
+	public static LightSource[] sortedLightSources = new LightSource[1024];
+	static int lastEntryCount = 0;
 
 	public static int getBrightness(int ID)
 	{
@@ -46,9 +47,9 @@ public class Dispatcher
 		
 		float lightBuffer;
 
-		int startIndex = hashAt(i, j, k) % soredLightSources.length;
-		for(int l = startIndex; l < soredLightSources.length; ++l) {
-			lightBuffer = lightSources.get(l).getLight(i, j, k);
+		int startIndex = hashAt(i, j, k) % lastEntryCount;
+		for(int l = startIndex; l < lastEntryCount; ++l) {
+			lightBuffer = sortedLightSources[l].getLight(i, j, k);
 			if(lightBuffer > torchLight)
 			{
 				torchLight = lightBuffer;
@@ -96,10 +97,15 @@ public class Dispatcher
 	}
 
 	public static void computedSortedLightSources() {
-		soredLightSources = lightSources.stream().sorted(Dispatcher::compareByKey).toArray(LightSource[]::new);
-	}
+		if(lightSources.isEmpty()) return;
 
-	private static int compareByKey(LightSource source1, LightSource source2) {
-		return Integer.compare(hashAt(source1), hashAt(source2));
+		Arrays.fill(sortedLightSources, null);
+		int index = 0;
+		while(index < lightSources.size()) {
+			sortedLightSources[index] = lightSources.get(index);
+			++index;
+		}
+		lastEntryCount = index;
+		Arrays.sort(sortedLightSources, 0, index - 1);
 	}
 }
