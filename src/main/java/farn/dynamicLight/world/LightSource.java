@@ -4,6 +4,7 @@ package farn.dynamicLight.world;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
@@ -45,13 +46,18 @@ public class LightSource{
 
     public void setPos(World world, double x, double y, double z)
     {
-            posX = x;
-            posY = y;
-            posZ = z;
-            iX = (int)posX;
-            iY = (int)posY;
-            iZ = (int)posZ;
+		int flooredX = (int) x;
+		int flooredY = (int) y;
+		int flooredZ = (int) z;
+		if (flooredX != iX || flooredY != iY || flooredZ != iZ) {
+			posX = x;
+			posY = y;
+			posZ = z;
+			iX = flooredX;
+			iY = flooredY;
+			iZ = flooredZ;
 			markDirty(world);
+		}
     }
 
 	public float getLight(int x, int y, int z)
