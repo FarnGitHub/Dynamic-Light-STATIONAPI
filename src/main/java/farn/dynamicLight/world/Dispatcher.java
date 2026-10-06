@@ -106,6 +106,10 @@ public class Dispatcher
 			++index;
 		}
 		lastEntryCount = index;
-		Arrays.sort(sortedLightSources, 0, index - 1);
+		Arrays.sort(sortedLightSources, 0, index - 1, Dispatcher::compareHash);
+	}
+
+	private static int compareHash(LightSource l1, LightSource l2) {
+		return Integer.compare(hashAt(l1), hashAt(l2));
 	}
 }

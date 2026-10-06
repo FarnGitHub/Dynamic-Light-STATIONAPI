@@ -5,10 +5,10 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 
 
-public class LightSource
-{
+public class LightSource{
 	boolean isLit = false;
 	public double posX;
 	public double posY;
