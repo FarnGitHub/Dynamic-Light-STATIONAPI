@@ -12,7 +12,11 @@ import java.util.*;
 
 public class WorldTick {
 
-    static long prevTime;
+    private static long prevTime;
+
+    private static final List<LightSource> lightSources = new ArrayList<>();
+
+    private static World curWorld;
 
     private WorldTick() {
     }
@@ -29,7 +33,7 @@ public class WorldTick {
 
     private static void tickEntity(Minecraft mc)
     {
-        for(LightSource torchLoopClass : Dispatcher.lightSources) {
+        for(LightSource torchLoopClass : lightSources) {
             Entity torchent = torchLoopClass.getEntity();
 
             if(torchent instanceof PlayerEntity entPlayer) {
@@ -44,7 +48,6 @@ public class WorldTick {
 
     private static void tickPlayer(LightSource torchLoopClass, PlayerEntity entPlayer)
     {
-        int oldbrightness = torchLoopClass.active() ? torchLoopClass.getBrightness() : 0;
 
         int itembrightness;
         if (entPlayer.getHand() != null)
@@ -53,19 +56,14 @@ public class WorldTick {
             if (ID != torchLoopClass.currentItemID)
             {
                 torchLoopClass.currentItemID = ID;
-
                 itembrightness = Dispatcher.getBrightness(ID);
-                if (itembrightness >= oldbrightness)
+                if (itembrightness > 0)
                 {
 
                     torchLoopClass.setBrightness(itembrightness);
                     torchLoopClass.setRange(Dispatcher.getRange(ID));
                     torchLoopClass.setWorkUnderWater(Dispatcher.workUnderWater(ID));
-                    torchLoopClass.setState(entPlayer.world, true);
-                }
-                else
-                {
-                    torchLoopClass.setState(entPlayer.world, false);
+                    torchLoopClass.setState(entPlayer.world, true, true);
                 }
             }
         }
@@ -88,19 +86,24 @@ public class WorldTick {
         if (torchLoopClass.hasNoTimer()) {
             if (torchLoopClass.isDead()) {
                 torchent.markDead();
-                Dispatcher.removeLight(mc.world, torchLoopClass);
+                removeLight(mc.world, torchLoopClass);
             } else {
                 torchLoopClass.timerTick();
             }
         }
     }
 
-    private static void tick(World worldObj)
+    private static void tick(World world)
     {
+        if(world != curWorld) {
+            curWorld = world;
+            clearLightSources();
+        }
+
         List<Entity> tempList = new ArrayList<>();
 
         //noinspection unchecked
-        for (Entity tempent : (Iterable<Entity>) worldObj.entities) {
+        for (Entity tempent : (Iterable<Entity>) world.entities) {
             if (tempent instanceof PlayerEntity || shouldEntityEmitLight(tempent)) {
                 tempList.add(tempent);
             } else if (tempent instanceof ItemEntity helpitem) {
@@ -111,9 +114,9 @@ public class WorldTick {
             }
         }
         // tempList is now a fresh list of all Entities that can have a PlayerTorch
-        Iterator<LightSource> lightSources = Dispatcher.lightSources.iterator();
-        while(lightSources.hasNext()) { // loop the old PlayerTorch List
-            LightSource torchLoopClass = lightSources.next();
+        Iterator<LightSource> itlightSources = lightSources.iterator();
+        while(itlightSources.hasNext()) { // loop the old PlayerTorch List
+            LightSource torchLoopClass = itlightSources.next();
             Entity torchent = torchLoopClass.getEntity();
 
             if (tempList.contains(torchent)) // check if the old entities are still in the world
@@ -123,7 +126,7 @@ public class WorldTick {
             else if ((!shouldEntityEmitLight(torchent)) // exclude foreign modded torches and burning stuff
                     || torchent != null && !torchent.isAlive()) // but do delete dead stuff
             {
-                Dispatcher.removeLight(worldObj, torchLoopClass, lightSources); // else remove them from the PlayerTorch list
+                removeLight(world, torchLoopClass, itlightSources); // else remove them from the PlayerTorch list
             }
         }
 
@@ -131,7 +134,7 @@ public class WorldTick {
         {
 
             LightSource newtorch = new LightSource(newent);
-            Dispatcher.addLight(newtorch);
+            addLight(newtorch);
 
             if(newent instanceof ItemEntity institem)
             {
@@ -139,20 +142,44 @@ public class WorldTick {
                 newtorch.setRange(Dispatcher.getRange(institem.stack.itemId));
                 newtorch.setTimer(Dispatcher.getTimer(institem.stack.itemId));
                 newtorch.setWorkUnderWater(Dispatcher.workUnderWater(institem.stack.itemId));
-                newtorch.setState(worldObj, true);
+                newtorch.setState(world, true);
             } else if(shouldEntityEmitLight(newent) && !(newent instanceof PlayerEntity)) {
                 newtorch.setBrightness(15);
                 newtorch.setRange(31);
-                newtorch.setState(worldObj, true);
+                newtorch.setState(world, true);
             }
         }
 
-        Dispatcher.computedSortedLightSources();
+        Dispatcher.computeLightSource(lightSources);
     }
 
     private static boolean shouldEntityEmitLight(Entity ent) {
         if(ent instanceof CreeperEntity creeperEntity)
             return creeperEntity.lastFuseTime > 0;
         return ent.isOnFire() || ent instanceof TntEntity;
+    }
+
+    public static void addLight(LightSource playertorch)
+    {
+        if(lightSources.size() > Dispatcher.MAX_LIGHT_SOURCE)
+            lightSources.remove(0);
+
+        lightSources.add(playertorch);
+    }
+
+    public static void removeLight(World world, LightSource playertorch)
+    {
+        playertorch.setState(world, false);
+        lightSources.remove(playertorch);
+    }
+
+    public static void removeLight(World world, LightSource playertorch, Iterator<LightSource> iterator)
+    {
+        playertorch.setState(world, false);
+        iterator.remove();
+    }
+
+    public static void clearLightSources() {
+        lightSources.clear();
     }
 }

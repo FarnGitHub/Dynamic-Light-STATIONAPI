@@ -3,15 +3,15 @@ package farn.dynamicLight.world;
 import farn.dynamicLight.cache.ItemLightData;
 import farn.dynamicLight.config.DynamicLightLoader;
 import net.minecraft.item.Item;
-import net.minecraft.world.World;
+import net.minecraft.util.math.MathHelper;
 
 import java.util.*;
 
 public class Dispatcher
 {
-	public static final List<LightSource> lightSources = new ArrayList<>();
-	public static LightSource[] sortedLightSources = new LightSource[1024];
-	static int lastEntryCount = 0;
+	public static final int MAX_LIGHT_SOURCE = 128;
+	private static LightSource[] lightSourceLookup = new LightSource[MAX_LIGHT_SOURCE];
+	static int lightSourcesSize = 0;
 
 	public static int getBrightness(int ID)
 	{
@@ -41,44 +41,28 @@ public class Dispatcher
 		return DynamicLightLoader.lightdataMap.get(Item.ITEMS[id]);
 	}
 	
-	public static float getBrightness(int i, int j, int k)
-	{	
-		float torchLight = 0.0F;
-		
-		float lightBuffer;
+	public static int getBrightness(int i, int j, int k)
+	{
+		if(lightSourcesSize == 0) return 0;
 
-		int startIndex = hashAt(i, j, k) % lastEntryCount;
-		for(int l = startIndex; l < lastEntryCount; ++l) {
-			lightBuffer = sortedLightSources[l].getLight(i, j, k);
+		double torchLight = 0.0F;
+		
+		double lightBuffer;
+
+		int startIndex = hashAt(i, j, k) % lightSourcesSize;
+		for(int l = startIndex; l < lightSourcesSize; ++l) {
+			lightBuffer = lightSourceLookup[l].getLight(i, j, k);
 			if(lightBuffer > torchLight)
 			{
 				torchLight = lightBuffer;
 			}
 		}
 		
-		return torchLight;
-	}
-
-	
-	public static void addLight(LightSource playertorch)
-    {
-		lightSources.add(playertorch);
-    }
-	
-	public static void removeLight(World world, LightSource playertorch)
-	{
-		playertorch.setState(world, false);
-		lightSources.remove(playertorch);
-	}
-
-	public static void removeLight(World world, LightSource playertorch, Iterator<LightSource> iterator)
-	{
-		playertorch.setState(world, false);
-		iterator.remove();
+		return MathHelper.floor(torchLight);
 	}
 
 	public static int hashCell(int cellX, int cellY, int cellZ) {
-		return Math.abs(((cellX + 31) * 19 + cellY) * 41 + cellZ) * 83 & (lightSources.size() - 1);
+		return Math.abs(((cellX + 31) * 19 + cellY) * 41 + cellZ) * 83 & (lightSourceLookup.length - 1);
 	}
 
 	public static int hashAt(int x, int y, int z) {
@@ -96,17 +80,13 @@ public class Dispatcher
 		return coordinate >> 3;
 	}
 
-	public static void computedSortedLightSources() {
+	public static void computeLightSource(Collection<LightSource> lightSources) {
 		if(lightSources.isEmpty()) return;
 
-		Arrays.fill(sortedLightSources, null);
-		int index = 0;
-		while(index < lightSources.size()) {
-			sortedLightSources[index] = lightSources.get(index);
-			++index;
-		}
-		lastEntryCount = index;
-		Arrays.sort(sortedLightSources, 0, index - 1, Dispatcher::compareHash);
+		Arrays.fill(lightSourceLookup, null);
+		lightSourceLookup = lightSources.toArray(lightSourceLookup);
+		lightSourcesSize = lightSources.size();
+		Arrays.sort(lightSourceLookup, 0, lightSourcesSize - 1, Dispatcher::compareHash);
 	}
 
 	private static int compareHash(LightSource l1, LightSource l2) {

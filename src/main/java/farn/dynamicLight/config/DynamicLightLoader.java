@@ -3,8 +3,7 @@ package farn.dynamicLight.config;
 import com.google.gson.Gson;
 import farn.dynamicLight.DynamicLight;
 import farn.dynamicLight.cache.ItemLightData;
-import farn.dynamicLight.world.Dispatcher;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import farn.dynamicLight.world.WorldTick;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.item.Item;
 import net.modificationstation.stationapi.api.resource.Resource;
@@ -30,7 +29,7 @@ public class DynamicLightLoader {
     public static void reload(Map<Identifier, Resource> prepared) {
         reloading = true;
         lightdataMap.clear();
-        clearAllCache();
+        clearCache();
         for(Map.Entry<Identifier, Resource> entry : prepared.entrySet()) {
             ItemLightData data = null;
             try {
@@ -52,8 +51,9 @@ public class DynamicLightLoader {
         reloading = false;
     }
 
-    public static void clearAllCache() {
-        Dispatcher.lightSources.clear();
+    public static void clearCache() {
+        lightdataMap.clear();
+        WorldTick.clearLightSources();
     }
 
     public static void readConfig(boolean forceWrite) {
@@ -72,7 +72,7 @@ public class DynamicLightLoader {
 
     public static void readConfig() {
         reloading = true;
-        clearAllCache();
+        clearCache();
         readConfig(true);
         reloading = false;
     }

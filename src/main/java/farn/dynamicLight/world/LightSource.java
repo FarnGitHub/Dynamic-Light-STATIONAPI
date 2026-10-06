@@ -1,12 +1,10 @@
 package farn.dynamicLight.world;
 
 
-import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.NotNull;
 
 
 public class LightSource{
@@ -19,7 +17,6 @@ public class LightSource{
 	public int iZ;
 	private int brightness = 15;
 	private int range = brightness * 2 + 1;
-	float[] cache = new float[range * range * range];
 	private final Entity target;
 	public int currentItemID = 0;
 	private boolean worksUnderwater = true;
@@ -36,13 +33,18 @@ public class LightSource{
         return (isLit && target.isAlive() && !notWorkUnderwater());
     }
 
-    public void setState(World world, boolean flag)
+    public void setState(World world, boolean lit, boolean forceUpdate)
     {
-		if(this.isLit != flag) {
-			this.isLit = flag;
+		if(this.isLit != lit || forceUpdate) {
+			this.isLit = lit;
 			this.markDirty(world, true);
 		}
     }
+
+	public void setState(World world, boolean lit)
+	{
+		setState(world, lit, false);
+	}
 
     public void setPos(World world, double x, double y, double z)
     {
@@ -60,20 +62,19 @@ public class LightSource{
 		}
     }
 
-	public float getLight(int x, int y, int z)
+	public double getLight(int x, int y, int z)
 	{
-		if (isLit && !notWorkUnderwater())
-		{		
-			int diffX = x - iX + brightness;
-			int diffY = y - iY + brightness;
-			int diffZ = z - iZ + brightness;
-			
-			if ((diffX >= 0) && (diffX < range) && (diffY >= 0) && (diffY < range) && (diffZ >= 0) && (diffZ < range))
-			{
-				return cache[(diffX * range * range + diffY * range + diffZ)];
+		if (isLit && !notWorkUnderwater()) {
+			double dx = x - posX + 0.5;
+			double dy = y - posY + 0.5;
+			double dz = z - posZ + 0.5;
+
+			double distanceSquared = dx * dx + dy * dy + dz * dz;
+			if (distanceSquared <= range * range) {
+				return brightness - (MathHelper.sqrt(distanceSquared) / range * 15D);
 			}
 		}
-		return 0.0F;
+		return 0.0;
 	}
 
 	@SuppressWarnings("all")
@@ -82,53 +83,14 @@ public class LightSource{
 		return (!worksUnderwater && target.isInFluid(Material.WATER));
 	}
 
-	private void markDirty(World var1)
+	public void markDirty(World var1)
 	{
 		markDirty(var1, false);
 	}
 
-    private void markDirty(World world, boolean forceUpdate)
-    {
-        double XDiff = posX - iX;
-        double YDiff = posY - iY;
-        double ZDiff = posZ - iZ;
-        int index = 0;
+    public void markDirty(World world, boolean forceUpdate) {
 		if (System.currentTimeMillis() < this.updateTime+100L && !forceUpdate) return;
-
-        for(int i = -brightness; i <= brightness; i++)
-        {
-            for(int j = -brightness; j <= brightness; j++)
-            {
-                for(int k = -brightness; k <= brightness; k++)
-                {
-					int blockX = i + iX;
-					int blockY = j + iY;
-                    int blockZ = k + iZ;
-                    int blockID = world.getBlockId(blockX, blockY, blockZ);
-                    if(blockID != 0 && Block.BLOCKS[blockID].isFullCube())
-                    {
-                        cache[index++] = 0.0F;
-                        continue;
-                    }
-                    float distance = (float)(Math.abs((i + 0.5D) - XDiff) + Math.abs((j + 0.5D) - YDiff) + Math.abs((k + 0.5D) - ZDiff));
-                    if(distance <= (float) brightness)
-                    {
-                        cache[index++] = (float) brightness - distance;
-                    }
-					else
-                    {
-                        cache[index++] = 0.0F;
-                    }
-                }
-            }
-        }
-		world.setBlocksDirty(
-				this.iX-this.brightness,
-				this.iY-this.brightness,
-				this.iZ-this.brightness,
-				this.iX+this.brightness,
-				this.iY+this.brightness,
-				this.iZ+this.brightness);
+		world.setBlocksDirty(this.iX-this.range,this.iY-this.range,this.iZ-this.range,this.iX+this.range,this.iY+this.range,this.iZ+this.range);
 		this.updateTime = System.currentTimeMillis();
 	}
 	
@@ -136,7 +98,8 @@ public class LightSource{
 	{
 		brightness = i;
 	}
-	
+
+	@SuppressWarnings("unused")
 	public int getBrightness()
 	{
 		return brightness;
