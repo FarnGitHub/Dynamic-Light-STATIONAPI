@@ -27,18 +27,18 @@ public abstract class WorldMixin {
     @WrapMethod(method="getNaturalBrightness")
     public float getNaturalBrightnessWrap(int i, int j, int k, int l, Operation<Float> original)
     {
-        float lc = LightCache.getLightValue(i, j, k);
+        float lc; /*= LightCache.getLightValue(i, j, k);
         if(lc > l)
         {
             return lc;
-        }
+        }*/
 
         int lightValue = getLightLevel(i, j, k);
         float torchLight = Dispatcher.getBrightness(i, j, k);
         if(lightValue < torchLight)
         {
             int floorValue = (int)java.lang.Math.floor(torchLight);
-            if(floorValue==15)
+            /*if(floorValue==15)
             {
                 return dimension.lightLevelToLuminance[15];
             }
@@ -47,11 +47,12 @@ public abstract class WorldMixin {
                 int ceilValue = (int)java.lang.Math.ceil(torchLight);
                 float lerpValue = torchLight-floorValue;
                 return (1.0f-lerpValue)*dimension.lightLevelToLuminance[floorValue]+lerpValue*dimension.lightLevelToLuminance[ceilValue];
-            }
+            }*/
+            return dimension.lightLevelToLuminance[floorValue];
         }
 
         lc = dimension.lightLevelToLuminance[lightValue];
-        LightCache.setLightValue(i, j, k, lc);
+        //LightCache.setLightValue(i, j, k, lc);
         return lc;
     }
 
@@ -62,18 +63,18 @@ public abstract class WorldMixin {
     @WrapMethod(method="method_1782")
     public float method_1782Wrap(int i, int j, int k, Operation<Float> original)
     {
-        float lc = LightCache.getLightValue(i, j, k);
+        float lc;/* = LightCache.getLightValue(i, j, k);
         if(lc >= 0)
         {
             return lc;
-        }
+        }*/
 
         int lightValue = getLightLevel(i, j, k);
         float torchLight = Dispatcher.getBrightness(i, j, k);
         if(lightValue < torchLight)
         {
             int floorValue = (int)java.lang.Math.floor(torchLight);
-            if(floorValue==15)
+            /*if(floorValue==15)
             {
                 return dimension.lightLevelToLuminance[15];
             }
@@ -82,11 +83,12 @@ public abstract class WorldMixin {
                 int ceilValue = (int)java.lang.Math.ceil(torchLight);
                 float lerpValue = torchLight-floorValue;
                 return (1.0f-lerpValue)*dimension.lightLevelToLuminance[floorValue]+lerpValue*dimension.lightLevelToLuminance[ceilValue];
-            }
+            }*/
+            return dimension.lightLevelToLuminance[floorValue];
         }
 
         lc = dimension.lightLevelToLuminance[lightValue];
-        LightCache.setLightValue(i, j, k, lc);
+        //LightCache.setLightValue(i, j, k, lc);
         return lc;
     }
 

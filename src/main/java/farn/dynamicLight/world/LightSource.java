@@ -10,12 +10,12 @@ import net.minecraft.world.World;
 public class LightSource
 {
 	boolean isLit = false;
-	double posX;
-	double posY;
-	double posZ;
-	int iX;
-	int iY;
-	int iZ;
+	public double posX;
+	public double posY;
+	public double posZ;
+	public int iX;
+	public int iY;
+	public int iZ;
 	private int brightness = 15;
 	private int range = brightness * 2 + 1;
 	float[] cache = new float[range * range * range];
@@ -166,8 +166,7 @@ public class LightSource
 		return (timer != -1);
 	}
 	
-	public boolean isDead()
-	{
+	public boolean isDead() {
 		return (timer == 0);
 	}
 }

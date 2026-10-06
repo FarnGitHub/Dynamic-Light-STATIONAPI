@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import farn.dynamicLight.DynamicLight;
 import farn.dynamicLight.cache.ItemLightData;
 import farn.dynamicLight.world.Dispatcher;
-import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.item.Item;
@@ -14,6 +13,7 @@ import net.modificationstation.stationapi.api.util.Identifier;
 import java.io.*;
 import java.util.Map;
 import java.util.Properties;
+import java.util.WeakHashMap;
 
 public class DynamicLightLoader {
 
@@ -21,7 +21,7 @@ public class DynamicLightLoader {
 
     public static final Properties properties = new Properties();
     public static final File configFile = new File(FabricLoader.getInstance().getConfigDir().toString(), "dynamic_light_enables.cfg");
-    public static Int2ObjectMap<ItemLightData> lightdataMap = new Int2ObjectArrayMap<>();
+    public static WeakHashMap<Item, ItemLightData> lightdataMap = new WeakHashMap<>();
 
     public static ItemLightData parseFromJson(Resource resource) throws IOException {
          return new Gson().fromJson(resource.getReader(), ItemLightData.class);
@@ -31,31 +31,29 @@ public class DynamicLightLoader {
         reloading = true;
         lightdataMap.clear();
         clearAllCache();
-        prepared.forEach((iden, resource) -> {
+        for(Map.Entry<Identifier, Resource> entry : prepared.entrySet()) {
             ItemLightData data = null;
             try {
-                data = parseFromJson(resource);
+                data = parseFromJson(entry.getValue());
             } catch (Exception e) {
-                DynamicLight.LOGGER.error("Failed to parse {} : {}", iden, e.getMessage());
+                DynamicLight.LOGGER.error("Failed to parse {} : {}", entry.getKey(), e.getMessage());
             }
-            if(data == null) return;
+            if(data == null || data.getItem() == null) continue;
             data.enabled = true;
             try {
-                data.itemNames = Item.ITEMS[data.getItemId()].getTranslatedName();
+                data.itemNames = data.getItem().getTranslatedName();
             } catch (Exception e) {
                 data.itemNames = data.identifier;
             }
-            DynamicLight.LOGGER.info("Add Dynamic light from {}", iden);
-            lightdataMap.put(data.getItemId(), data);
-        });
+            DynamicLight.LOGGER.info("Add Dynamic light from {}", entry.getKey());
+            lightdataMap.put(data.getItem(), data);
+        }
         readConfig(false);
         reloading = false;
     }
 
     public static void clearAllCache() {
-        Dispatcher.clearCache();
         Dispatcher.lightSources.clear();
-        Dispatcher.entitys.clear();
     }
 
     public static void readConfig(boolean forceWrite) {
@@ -65,7 +63,7 @@ public class DynamicLightLoader {
 
         try (FileInputStream in = new FileInputStream(configFile)) {
             properties.load(in);
-            for(Int2ObjectMap.Entry<ItemLightData> dataEntry: lightdataMap.int2ObjectEntrySet()) {
+            for(Map.Entry<Item, ItemLightData> dataEntry : lightdataMap.entrySet()) {
                 dataEntry.getValue().enabled = properties.getProperty(dataEntry.getValue().identifier, "true").equals("true");
             }
         } catch (IOException ignored) {
@@ -81,7 +79,7 @@ public class DynamicLightLoader {
 
     public static void writeConfig() {
         try (FileOutputStream out = new FileOutputStream(configFile)) {
-            for(Int2ObjectMap.Entry<ItemLightData> dataEntry: lightdataMap.int2ObjectEntrySet()) {
+            for(Map.Entry<Item, ItemLightData> dataEntry : lightdataMap.entrySet()) {
                 properties.setProperty(dataEntry.getValue().identifier, dataEntry.getValue().enabled + "");
             }
             properties.store(out, "Dynamic Light Config");
