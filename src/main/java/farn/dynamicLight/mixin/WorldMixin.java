@@ -2,7 +2,6 @@ package farn.dynamicLight.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import farn.dynamicLight.cache.LightCache;
 import farn.dynamicLight.world.Dispatcher;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.Dimension;
@@ -27,33 +26,13 @@ public abstract class WorldMixin {
     @WrapMethod(method="getNaturalBrightness")
     public float getNaturalBrightnessWrap(int i, int j, int k, int l, Operation<Float> original)
     {
-        float lc; /*= LightCache.getLightValue(i, j, k);
-        if(lc > l)
-        {
-            return lc;
-        }*/
-
         int lightValue = getLightLevel(i, j, k);
         float torchLight = Dispatcher.getBrightness(i, j, k);
-        if(lightValue < torchLight)
-        {
+        if(lightValue < torchLight) {
             int floorValue = (int)java.lang.Math.floor(torchLight);
-            /*if(floorValue==15)
-            {
-                return dimension.lightLevelToLuminance[15];
-            }
-            else
-            {
-                int ceilValue = (int)java.lang.Math.ceil(torchLight);
-                float lerpValue = torchLight-floorValue;
-                return (1.0f-lerpValue)*dimension.lightLevelToLuminance[floorValue]+lerpValue*dimension.lightLevelToLuminance[ceilValue];
-            }*/
             return dimension.lightLevelToLuminance[floorValue];
         }
-
-        lc = dimension.lightLevelToLuminance[lightValue];
-        //LightCache.setLightValue(i, j, k, lc);
-        return lc;
+        return dimension.lightLevelToLuminance[lightValue];
     }
 
     /**
@@ -63,33 +42,13 @@ public abstract class WorldMixin {
     @WrapMethod(method="method_1782")
     public float method_1782Wrap(int i, int j, int k, Operation<Float> original)
     {
-        float lc;/* = LightCache.getLightValue(i, j, k);
-        if(lc >= 0)
-        {
-            return lc;
-        }*/
-
         int lightValue = getLightLevel(i, j, k);
         float torchLight = Dispatcher.getBrightness(i, j, k);
-        if(lightValue < torchLight)
-        {
+        if(lightValue < torchLight) {
             int floorValue = (int)java.lang.Math.floor(torchLight);
-            /*if(floorValue==15)
-            {
-                return dimension.lightLevelToLuminance[15];
-            }
-            else
-            {
-                int ceilValue = (int)java.lang.Math.ceil(torchLight);
-                float lerpValue = torchLight-floorValue;
-                return (1.0f-lerpValue)*dimension.lightLevelToLuminance[floorValue]+lerpValue*dimension.lightLevelToLuminance[ceilValue];
-            }*/
             return dimension.lightLevelToLuminance[floorValue];
         }
-
-        lc = dimension.lightLevelToLuminance[lightValue];
-        //LightCache.setLightValue(i, j, k, lc);
-        return lc;
+        return dimension.lightLevelToLuminance[lightValue];
     }
 
 }
