@@ -5,6 +5,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import net.modificationstation.stationapi.api.tick.TickScheduler;
 
 
 public class LightSource{
@@ -90,7 +91,14 @@ public class LightSource{
 
     public void markDirty(World world, boolean forceUpdate) {
 		if (System.currentTimeMillis() < this.updateTime+100L && !forceUpdate) return;
-		world.setBlocksDirty(this.iX-this.range,this.iY-this.range,this.iZ-this.range,this.iX+this.range,this.iY+this.range,this.iZ+this.range);
+		TickScheduler.CLIENT_RENDER_END.immediate(() -> world.setBlocksDirty(
+				this.iX-this.range,
+				this.iY-this.range,
+				this.iZ-this.range,
+				this.iX+this.range,
+				this.iY+this.range,
+				this.iZ+this.range
+		));
 		this.updateTime = System.currentTimeMillis();
 	}
 	
