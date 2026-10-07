@@ -85,6 +85,12 @@ public class LightSource{
 
     public void markDirty(boolean forceUpdate) {
 		if (System.currentTimeMillis() < this.updateTime+100L && !forceUpdate) return;
+		this.updateCache();
+		ChunkUpdater.markDirty(this.iX-this.brightness, this.iZ-this.brightness, this.iX+this.brightness, this.iZ+this.brightness);
+		this.updateTime = System.currentTimeMillis();
+	}
+
+	private void updateCache() {
 		int index = 0;
 		for(int rX = -this.brightness; rX <= this.brightness; ++rX) {
 			int x = rX + this.iX;
@@ -102,11 +108,10 @@ public class LightSource{
 						cache[index] = (byte)(brightness - (MathHelper.sqrt(distanceSquared) / range * 30D));
 					}
 					++index;
+					if(index >= cache.length) return;
 				}
 			}
 		}
-		ChunkUpdater.markDirty(this.iX-this.brightness, this.iZ-this.brightness, this.iX+this.brightness, this.iZ+this.brightness);
-		this.updateTime = System.currentTimeMillis();
 	}
 	
 	public void setBrightness(int i)
