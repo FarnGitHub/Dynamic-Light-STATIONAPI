@@ -10,7 +10,7 @@ public class DynamicLightEngine
 {
 	public static final int MAX_LIGHT_SOURCE = 128;
 	private static LightSource[] lightSourceLookup = new LightSource[MAX_LIGHT_SOURCE];
-	static int lightSourcesSize = 0;
+	private static int lightSourcesSize = 0;
 
 	public static ItemLightInfo of(int id) {
 		return ItemLightInfoLoader.id2info.get(id);
