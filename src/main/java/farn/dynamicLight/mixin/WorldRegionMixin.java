@@ -1,54 +1,19 @@
 package farn.dynamicLight.mixin;
 
-import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import farn.dynamicLight.world.Dispatcher;
-import net.minecraft.world.World;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import farn.dynamicLight.world.light_source.DynamicLightEngine;
 import net.minecraft.world.WorldRegion;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(WorldRegion.class)
 public abstract class WorldRegionMixin {
 
-    @Shadow
-    private World world;
-
-    @Shadow
-    public abstract int getRawBrightness(int x, int y, int z);
-
-    /**
-     * @author AtomicStryker
-     * @reason farnfarn02
-     */
-    @WrapMethod(method="getNaturalBrightness")
-    public float getNaturalBrightnessWrap(int i, int j, int k, int l, Operation<Float> original)
-    {
-
-        int lightValue = getRawBrightness(i, j, k);
-        float torchLight = Dispatcher.getBrightness(i, j, k);
-        if(lightValue < torchLight)
-        {
-            int floorValue = (int)java.lang.Math.floor(torchLight);
-            return world.dimension.lightLevelToLuminance[floorValue];
-        }
-        return world.dimension.lightLevelToLuminance[lightValue];
+    @WrapOperation(method={"getNaturalBrightness", "method_1782"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/WorldRegion;getRawBrightness(III)I"))
+    public int dynamiclight_getLightLevel(WorldRegion world, int x, int y, int z, Operation<Integer> original) {
+        int lightValue  = original.call(world, x,y,z);
+        int torchLight = DynamicLightEngine.getBrightness(x, y, z);
+        return Math.max(lightValue, torchLight);
     }
-
-    /**
-     * @author AtomicStryker
-     * @reason farnfarn02
-     */
-    @WrapMethod(method="method_1782")
-    public float method_1782Wrap(int i, int j, int k, Operation<Float> original)
-    {
-        int lightValue = getRawBrightness(i, j, k);
-        float torchLight = Dispatcher.getBrightness(i, j, k);
-        if(lightValue < torchLight) {
-            int floorValue = (int)java.lang.Math.floor(torchLight);
-            return world.dimension.lightLevelToLuminance[floorValue];
-        }
-        return world.dimension.lightLevelToLuminance[lightValue];
-    }
-
 }

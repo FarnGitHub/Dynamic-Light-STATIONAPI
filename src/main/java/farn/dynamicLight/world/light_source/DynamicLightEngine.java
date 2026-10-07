@@ -1,20 +1,19 @@
-package farn.dynamicLight.world;
+package farn.dynamicLight.world.light_source;
 
-import farn.dynamicLight.cache.ItemLightData;
-import farn.dynamicLight.config.DynamicLightLoader;
-import net.minecraft.item.Item;
+import farn.dynamicLight.config.ItemLightInfo;
+import farn.dynamicLight.config.ItemLightInfoLoader;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.*;
 
-public class Dispatcher
+public class DynamicLightEngine
 {
 	public static final int MAX_LIGHT_SOURCE = 128;
 	private static LightSource[] lightSourceLookup = new LightSource[MAX_LIGHT_SOURCE];
 	static int lightSourcesSize = 0;
 
-	public static ItemLightData of(int id) {
-		return DynamicLightLoader.lightdataMap.get(id);
+	public static ItemLightInfo of(int id) {
+		return ItemLightInfoLoader.id2info.get(id);
 	}
 	
 	public static int getBrightness(int i, int j, int k)
@@ -61,7 +60,7 @@ public class Dispatcher
 		Arrays.fill(lightSourceLookup, null);
 		lightSourceLookup = lightSources.toArray(lightSourceLookup);
 		lightSourcesSize = lightSources.size();
-		Arrays.sort(lightSourceLookup, 0, lightSourcesSize - 1, Dispatcher::compareHash);
+		Arrays.sort(lightSourceLookup, 0, lightSourcesSize - 1, DynamicLightEngine::compareHash);
 	}
 
 	private static int compareHash(LightSource l1, LightSource l2) {

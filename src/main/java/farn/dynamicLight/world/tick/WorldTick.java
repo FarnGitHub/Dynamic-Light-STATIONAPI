@@ -1,6 +1,8 @@
-package farn.dynamicLight.world;
+package farn.dynamicLight.world.tick;
 
-import farn.dynamicLight.cache.ItemLightData;
+import farn.dynamicLight.config.ItemLightInfo;
+import farn.dynamicLight.world.light_source.DynamicLightEngine;
+import farn.dynamicLight.world.light_source.LightSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.TntEntity;
@@ -32,14 +34,13 @@ public class WorldTick {
         if (world != null && System.currentTimeMillis() >= prevTime + 50L)
         {
             collectEntity(world);
-            tickEntity(world);
+            tickEntity();
             ChunkUpdater.updateAllDirty(world);
             prevTime = System.currentTimeMillis();
         }
     }
 
-    private static void tickEntity(World world)
-    {
+    private static void tickEntity() {
         for(LightSource torchLoopClass : lightSources) {
             Entity torchent = torchLoopClass.getEntity();
 
@@ -48,7 +49,7 @@ public class WorldTick {
             } else if(torchent instanceof ItemEntity itemEntity) {
                 tickItemEntity(torchLoopClass, itemEntity);
             } else {
-                torchLoopClass.setPos(world, torchent.x, torchent.y, torchent.z);
+                torchLoopClass.setPos(torchent.x, torchent.y, torchent.z);
             }
         }
     }
@@ -62,36 +63,36 @@ public class WorldTick {
             if (ID != torchLoopClass.currentItemID)
             {
                 torchLoopClass.currentItemID = ID;
-                ItemLightData data = Dispatcher.of(ID);
+                ItemLightInfo data = DynamicLightEngine.of(ID);
                 if (data != null && data.enabled) {
                     torchLoopClass.setBrightness(data.brightness);
                     torchLoopClass.setRange(data.range);
                     torchLoopClass.setWorkUnderWater(data.underwater);
-                    torchLoopClass.setState(entPlayer.world, true, true);
+                    torchLoopClass.setState(true, true);
                 } else {
-                    torchLoopClass.setState(entPlayer.world, false);
+                    torchLoopClass.setState(false);
                 }
             }
         }
         else
         {
             torchLoopClass.currentItemID = 0;
-            torchLoopClass.setState(entPlayer.world, false);
+            torchLoopClass.setState(false);
         }
 
         if (torchLoopClass.active())
         {
-            torchLoopClass.setPos(entPlayer.world, entPlayer.x, entPlayer.y, entPlayer.z);
+            torchLoopClass.setPos(entPlayer.x, entPlayer.y, entPlayer.z);
         }
     }
 
     private static void tickItemEntity(LightSource torchLoopClass, Entity torchent)
     {
-        torchLoopClass.setPos(torchent.world, torchent.x, torchent.y, torchent.z);
+        torchLoopClass.setPos(torchent.x, torchent.y, torchent.z);
 
         if (!torchLoopClass.hasNoTimer()) {
             if (torchLoopClass.isDead()) {
-                torchLoopClass.setState(torchent.world, false);
+                torchLoopClass.setState(false);
             } else {
                 torchLoopClass.timerTick();
             }
@@ -106,7 +107,7 @@ public class WorldTick {
             if (tempent instanceof PlayerEntity || shouldEntityEmitLight(tempent)) {
                 tempList.add(tempent);
             } else if (tempent instanceof ItemEntity helpitem) {
-                ItemLightData data = Dispatcher.of(helpitem.stack.itemId);
+                ItemLightInfo data = DynamicLightEngine.of(helpitem.stack.itemId);
                 if (data != null && data.enabled) {
                     tempList.add(tempent);
                 }
@@ -121,7 +122,7 @@ public class WorldTick {
             if (tempList.contains(torchent)) { // check if the old entities are still in the world
                 tempList.remove(torchent); // if so remove them from the fresh list
             } else if (shouldRemoveLight(torchent)) {// delete dead stuff
-                removeLight(world, torchLoopClass, itlightSources); // else remove them from the PlayerTorch list
+                removeLight(torchLoopClass, itlightSources); // else remove them from the PlayerTorch list
             }
         }
 
@@ -130,27 +131,27 @@ public class WorldTick {
             LightSource newtorch;
             if(newent instanceof ItemEntity institem)
             {
-                ItemLightData data = Dispatcher.of(institem.stack.itemId);
+                ItemLightInfo data = DynamicLightEngine.of(institem.stack.itemId);
                 if(data != null && data.enabled) {
                     addLight(newtorch = new LightSource(newent));
                     newtorch.setBrightness(data.brightness);
                     newtorch.setRange(data.range);
                     newtorch.setTimer(data.timer);
                     newtorch.setWorkUnderWater(data.underwater);
-                    newtorch.setState(world, true);
+                    newtorch.setState(true);
                 }
             } else if(shouldEntityEmitLight(newent) && !(newent instanceof PlayerEntity)) {
                 addLight(newtorch = new LightSource(newent));
                 newtorch.setBrightness(15);
                 newtorch.setRange(31);
-                newtorch.setState(world, true);
+                newtorch.setState(true);
             } else {
                 addLight(new LightSource(newent));
             }
         }
 
         if(lightSourcesChanged)
-            Dispatcher.computeLightSource(lightSources);
+            DynamicLightEngine.computeLightSource(lightSources);
     }
 
     private static boolean shouldEntityEmitLight(Entity ent) {
@@ -165,16 +166,16 @@ public class WorldTick {
 
     public static void addLight(LightSource playertorch)
     {
-        if(lightSources.size() > Dispatcher.MAX_LIGHT_SOURCE)
+        if(lightSources.size() > DynamicLightEngine.MAX_LIGHT_SOURCE)
             lightSources.remove(0);
 
         lightSources.add(playertorch);
         lightSourcesChanged = true;
     }
 
-    public static void removeLight(World world, LightSource playertorch, Iterator<LightSource> iterator)
+    public static void removeLight(LightSource playertorch, Iterator<LightSource> iterator)
     {
-        playertorch.setState(world, false);
+        playertorch.setState(false);
         iterator.remove();
         lightSourcesChanged = true;
     }

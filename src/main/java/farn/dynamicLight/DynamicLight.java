@@ -1,8 +1,8 @@
 package farn.dynamicLight;
 
-import farn.dynamicLight.config.DynamicLightLoader;
-import farn.dynamicLight.resource.DynamicLightReloader;
-import farn.dynamicLight.world.WorldTick;
+import farn.dynamicLight.config.ItemLightInfoLoader;
+import farn.dynamicLight.config.ItemLightInfoReloader;
+import farn.dynamicLight.world.tick.WorldTick;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mine_diver.unsafeevents.listener.EventListener;
 import net.mine_diver.unsafeevents.listener.ListenerPriority;
@@ -34,13 +34,13 @@ public class DynamicLight {
 
     @EventListener
     public void registerReloader(DataResourceReloaderRegisterEvent e) {
-        e.resourceManager.registerReloader(DynamicLightReloader.INSTANCE);
+        e.resourceManager.registerReloader(ItemLightInfoReloader.INSTANCE);
     }
 
     @EventListener(priority = ListenerPriority.LOWEST)
     public void dataEvent(DataReloadEvent event) {
-        DynamicLightReloader.INSTANCE.apply(
-                DynamicLightReloader.INSTANCE.prepare(
+        ItemLightInfoReloader.INSTANCE.apply(
+                ItemLightInfoReloader.INSTANCE.prepare(
                         DataManager.INSTANCE,
                         DummyProfiler.INSTANCE),
                 DataManager.INSTANCE,
@@ -50,7 +50,7 @@ public class DynamicLight {
 
     @EventListener
     public static void worldTick(GameTickEvent.End ev) {
-        if(!DynamicLightLoader.reloading)
+        if(!ItemLightInfoLoader.reloading)
             WorldTick.tick(Minecraft.INSTANCE.world);
     }
 }

@@ -1,54 +1,20 @@
 package farn.dynamicLight.mixin;
 
-import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import farn.dynamicLight.world.Dispatcher;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import farn.dynamicLight.world.light_source.DynamicLightEngine;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.Dimension;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(World.class)
 public abstract class WorldMixin {
 
-    @Shadow
-    public abstract int getLightLevel(int x, int y, int z);
-
-    @Shadow
-    @Final
-    public Dimension dimension;
-
-    /**
-     * @author AtomicStryker
-     * @reason farnfarn02
-     */
-    @WrapMethod(method="getNaturalBrightness")
-    public float getNaturalBrightnessWrap(int i, int j, int k, int l, Operation<Float> original)
-    {
-        int lightValue = getLightLevel(i, j, k);
-        float torchLight = Dispatcher.getBrightness(i, j, k);
-        if(lightValue < torchLight) {
-            int floorValue = (int)java.lang.Math.floor(torchLight);
-            return dimension.lightLevelToLuminance[floorValue];
-        }
-        return dimension.lightLevelToLuminance[lightValue];
-    }
-
-    /**
-     * @author AtomicStryker
-     * @reason farnfarn02
-     */
-    @WrapMethod(method="method_1782")
-    public float method_1782Wrap(int i, int j, int k, Operation<Float> original)
-    {
-        int lightValue = getLightLevel(i, j, k);
-        float torchLight = Dispatcher.getBrightness(i, j, k);
-        if(lightValue < torchLight) {
-            int floorValue = (int)java.lang.Math.floor(torchLight);
-            return dimension.lightLevelToLuminance[floorValue];
-        }
-        return dimension.lightLevelToLuminance[lightValue];
+    @WrapOperation(method={"getNaturalBrightness", "method_1782"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;getLightLevel(III)I"))
+    public int dynamiclight_getLightLevel(World world, int x, int y, int z, Operation<Integer> original) {
+        int lightValue  = original.call(world, x,y,z);
+        int torchLight = DynamicLightEngine.getBrightness(x, y, z);
+        return Math.max(lightValue, torchLight);
     }
 
 }

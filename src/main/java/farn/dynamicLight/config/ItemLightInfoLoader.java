@@ -2,38 +2,35 @@ package farn.dynamicLight.config;
 
 import com.google.gson.Gson;
 import farn.dynamicLight.DynamicLight;
-import farn.dynamicLight.cache.ItemLightData;
-import farn.dynamicLight.world.WorldTick;
+import farn.dynamicLight.world.tick.WorldTick;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.item.Item;
 import net.modificationstation.stationapi.api.resource.Resource;
 import net.modificationstation.stationapi.api.util.Identifier;
 
 import java.io.*;
 import java.util.Map;
 import java.util.Properties;
-import java.util.WeakHashMap;
 
-public class DynamicLightLoader {
+public class ItemLightInfoLoader {
 
     public static boolean reloading = false;
 
-    public static final Properties properties = new Properties();
-    public static final File configFile = new File(FabricLoader.getInstance().getConfigDir().toString(), "dynamic_light_enables.cfg");
-    public static Int2ObjectMap<ItemLightData> lightdataMap = new Int2ObjectOpenHashMap<>();
+    public static final Properties prop = new Properties();
+    public static final File cfgFile = new File(FabricLoader.getInstance().getConfigDir().toString(), "dynamic_light_enables.cfg");
+    public static Int2ObjectMap<ItemLightInfo> id2info = new Int2ObjectOpenHashMap<>();
 
-    public static ItemLightData parseFromJson(Resource resource) throws IOException {
-         return new Gson().fromJson(resource.getReader(), ItemLightData.class);
+    public static ItemLightInfo parseFromJson(Resource resource) throws IOException {
+         return new Gson().fromJson(resource.getReader(), ItemLightInfo.class);
     }
 
     public static void reload(Map<Identifier, Resource> prepared) {
         reloading = true;
-        lightdataMap.clear();
+        id2info.clear();
         clearCache();
         for(Map.Entry<Identifier, Resource> entry : prepared.entrySet()) {
-            ItemLightData data = null;
+            ItemLightInfo data = null;
             try {
                 data = parseFromJson(entry.getValue());
             } catch (Exception e) {
@@ -47,7 +44,7 @@ public class DynamicLightLoader {
                 data.itemNames = data.identifier;
             }
             DynamicLight.LOGGER.info("Add Dynamic light from {}", entry.getKey());
-            lightdataMap.put(data.getItem().id, data);
+            id2info.put(data.getItem().id, data);
         }
         readConfig(false);
         reloading = false;
@@ -58,14 +55,14 @@ public class DynamicLightLoader {
     }
 
     public static void readConfig(boolean forceWrite) {
-        if(!configFile.exists() || forceWrite){
+        if(!cfgFile.exists() || forceWrite){
             writeConfig();
         }
 
-        try (FileInputStream in = new FileInputStream(configFile)) {
-            properties.load(in);
-            for(Map.Entry<Integer, ItemLightData> dataEntry : lightdataMap.int2ObjectEntrySet()) {
-                dataEntry.getValue().enabled = properties.getProperty(dataEntry.getValue().identifier, "true").equals("true");
+        try (FileInputStream in = new FileInputStream(cfgFile)) {
+            prop.load(in);
+            for(ItemLightInfo info : id2info.values()) {
+                info.enabled = prop.getProperty(info.identifier, "true").equals("true");
             }
         } catch (IOException ignored) {
         }
@@ -79,11 +76,11 @@ public class DynamicLightLoader {
     }
 
     public static void writeConfig() {
-        try (FileOutputStream out = new FileOutputStream(configFile)) {
-            for(Map.Entry<Integer, ItemLightData> dataEntry : lightdataMap.entrySet()) {
-                properties.setProperty(dataEntry.getValue().identifier, dataEntry.getValue().enabled + "");
+        try (FileOutputStream out = new FileOutputStream(cfgFile)) {
+            for(ItemLightInfo info : id2info.values()) {
+                prop.setProperty(info.identifier, info.enabled + "");
             }
-            properties.store(out, "Dynamic Light Config");
+            prop.store(out, "Dynamic Light Config");
         } catch (IOException ignored) {
         }
     }

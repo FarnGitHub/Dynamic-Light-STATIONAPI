@@ -1,6 +1,5 @@
-package farn.dynamicLight.resource;
+package farn.dynamicLight.config;
 
-import farn.dynamicLight.config.DynamicLightLoader;
 import net.modificationstation.stationapi.api.resource.Resource;
 import net.modificationstation.stationapi.api.resource.ResourceManager;
 import net.modificationstation.stationapi.api.resource.SinglePreparationResourceReloader;
@@ -9,9 +8,9 @@ import net.modificationstation.stationapi.api.util.profiler.Profiler;
 
 import java.util.Map;
 
-public class DynamicLightReloader extends SinglePreparationResourceReloader<Map<Identifier, Resource>> {
+public class ItemLightInfoReloader extends SinglePreparationResourceReloader<Map<Identifier, Resource>> {
 
-    public static final DynamicLightReloader INSTANCE = new DynamicLightReloader();
+    public static final ItemLightInfoReloader INSTANCE = new ItemLightInfoReloader();
 
     @Override
     public Map<Identifier, Resource> prepare(ResourceManager manager, Profiler profiler) {
@@ -20,6 +19,6 @@ public class DynamicLightReloader extends SinglePreparationResourceReloader<Map<
 
     @Override
     public void apply(Map<Identifier, Resource> prepared, ResourceManager manager, Profiler profiler) {
-        DynamicLightLoader.reload(prepared);
+        ItemLightInfoLoader.reload(prepared);
     }
 }

@@ -1,4 +1,4 @@
-package farn.dynamicLight.world;
+package farn.dynamicLight.world.tick;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;

@@ -1,13 +1,9 @@
-package farn.dynamicLight.world;
+package farn.dynamicLight.world.light_source;
 
-
-import net.minecraft.block.Block;
+import farn.dynamicLight.world.tick.ChunkUpdater;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
-import net.modificationstation.stationapi.api.tick.TickScheduler;
-
 
 public class LightSource{
 	boolean isLit = false;
@@ -36,20 +32,20 @@ public class LightSource{
         return (isLit && target.isAlive() && !notWorkUnderwater());
     }
 
-    public void setState(World world, boolean lit, boolean forceUpdate)
+    public void setState(boolean lit, boolean forceUpdate)
     {
 		if(this.isLit != lit || forceUpdate) {
 			this.isLit = lit;
-			this.markDirty(world, true);
+			this.markDirty(true);
 		}
     }
 
-	public void setState(World world, boolean lit)
+	public void setState(boolean lit)
 	{
-		setState(world, lit, false);
+		setState(lit, false);
 	}
 
-    public void setPos(World world, double x, double y, double z)
+    public void setPos(double x, double y, double z)
     {
 		int flooredX = (int) x;
 		int flooredY = (int) y;
@@ -61,7 +57,7 @@ public class LightSource{
 			iX = flooredX;
 			iY = flooredY;
 			iZ = flooredZ;
-			markDirty(world);
+			markDirty(false);
 		}
     }
 
@@ -86,12 +82,8 @@ public class LightSource{
 		return (!worksUnderwater && target.isInFluid(Material.WATER));
 	}
 
-	public void markDirty(World var1)
-	{
-		markDirty(var1, false);
-	}
 
-    public void markDirty(World world, boolean forceUpdate) {
+    public void markDirty(boolean forceUpdate) {
 		if (System.currentTimeMillis() < this.updateTime+100L && !forceUpdate) return;
 		int index = 0;
 		for(int rX = -this.brightness; rX <= this.brightness; ++rX) {
