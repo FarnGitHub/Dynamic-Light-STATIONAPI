@@ -16,16 +16,16 @@ public class DynamicLightEngine
 		return ItemLightInfoLoader.id2info.get(id);
 	}
 	
-	public static int getBrightness(int i, int j, int k)
+	public static int getBrightness(int x, int y, int z, int maxLight)
 	{
-		if(lightSourcesSize == 0) return 0;
+		if(lightSourcesSize == 0 || maxLight == 15) return maxLight;
 
 		int torchLight = 0;
 		
 		int lightBuffer;
 
-		for(int l = hashAt(i, j, k); l < lightSourcesSize; ++l) {
-			lightBuffer = lightSourceLookup[l].getLight(i, j, k);
+		for(int l = hashAt(x, y, z); l < lightSourcesSize; ++l) {
+			lightBuffer = lightSourceLookup[l].getLight(x, y, z);
 			if(lightBuffer > torchLight)
 			{
 				torchLight = lightBuffer;

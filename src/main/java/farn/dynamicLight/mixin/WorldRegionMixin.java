@@ -13,7 +13,7 @@ public abstract class WorldRegionMixin {
     @WrapOperation(method={"getNaturalBrightness", "method_1782"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/WorldRegion;getRawBrightness(III)I"))
     public int dynamiclight_getLightLevel(WorldRegion world, int x, int y, int z, Operation<Integer> original) {
         int lightValue  = original.call(world, x,y,z);
-        int torchLight = DynamicLightEngine.getBrightness(x, y, z);
+        int torchLight = DynamicLightEngine.getBrightness(x, y, z, lightValue);
         return Math.max(lightValue, torchLight);
     }
 }
