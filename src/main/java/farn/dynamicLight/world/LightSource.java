@@ -1,6 +1,7 @@
 package farn.dynamicLight.world;
 
 
+import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
@@ -17,7 +18,8 @@ public class LightSource{
 	public int iY;
 	public int iZ;
 	private int brightness = 15;
-	private int range = brightness * 2 + 1;
+	private int range = 31;
+	byte[] cache = new byte[29791];
 	private final Entity target;
 	public int currentItemID = 0;
 	private boolean worksUnderwater = true;
@@ -63,19 +65,19 @@ public class LightSource{
 		}
     }
 
-	public double getLight(int x, int y, int z)
+	public int getLight(int x, int y, int z)
 	{
 		if (isLit && !notWorkUnderwater()) {
-			double dx = x - posX + 0.5;
-			double dy = y - posY + 0.5;
-			double dz = z - posZ + 0.5;
+			int diffX = x - iX + brightness;
+			int diffY = y - iY + brightness;
+			int diffZ = z - iZ + brightness;
 
-			double distanceSquared = dx * dx + dy * dy + dz * dz;
-			if (distanceSquared <= range * range) {
-				return brightness - (MathHelper.sqrt(distanceSquared) / range * 15D);
+			if ((diffX >= 0) && (diffX < range) && (diffY >= 0) && (diffY < range) && (diffZ >= 0) && (diffZ < range))
+			{
+				return cache[(diffX * range * range + diffY * range + diffZ)];
 			}
 		}
-		return 0.0;
+		return 0;
 	}
 
 	@SuppressWarnings("all")
@@ -91,14 +93,27 @@ public class LightSource{
 
     public void markDirty(World world, boolean forceUpdate) {
 		if (System.currentTimeMillis() < this.updateTime+100L && !forceUpdate) return;
-		TickScheduler.CLIENT_RENDER_END.immediate(() -> world.setBlocksDirty(
-				this.iX-this.range,
-				this.iY-this.range,
-				this.iZ-this.range,
-				this.iX+this.range,
-				this.iY+this.range,
-				this.iZ+this.range
-		));
+		int index = 0;
+		for(int rX = -this.brightness; rX <= this.brightness; ++rX) {
+			int x = rX + this.iX;
+
+			for(int rY = -this.brightness; rY <= this.brightness; ++rY) {
+				int y = rY + this.iY;
+
+				for(int rZ = -this.brightness; rZ <= this.brightness; ++rZ) {
+					int z = rZ + this.iZ;
+					double dx = x - posX + 0.5;
+					double dy = y - posY + 0.5;
+					double dz = z - posZ + 0.5;
+					double distanceSquared = dx * dx + dy * dy + dz * dz;
+					if (distanceSquared <= range * range) {
+						cache[index] = (byte)(brightness - (MathHelper.sqrt(distanceSquared) / range * 30D));
+					}
+					++index;
+				}
+			}
+		}
+		ChunkUpdater.markDirty(this.iX-this.brightness, this.iZ-this.brightness, this.iX+this.brightness, this.iZ+this.brightness);
 		this.updateTime = System.currentTimeMillis();
 	}
 	

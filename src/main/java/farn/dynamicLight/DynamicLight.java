@@ -50,7 +50,7 @@ public class DynamicLight {
 
     @EventListener
     public static void worldTick(GameTickEvent.End ev) {
-        if(Minecraft.INSTANCE.world != null && !DynamicLightLoader.reloading)
-            WorldTick.tick(Minecraft.INSTANCE);
+        if(!DynamicLightLoader.reloading)
+            WorldTick.tick(Minecraft.INSTANCE.world);
     }
 }

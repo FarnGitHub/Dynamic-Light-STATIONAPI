@@ -17,7 +17,8 @@ public class ConfigScreen extends Screen{
 
     public void init() {
         TranslationStorage var1 = TranslationStorage.getInstance();
-        this.buttons.add(new OptionButtonWidget(0, this.width / 2 - 75, this.height - 48, var1.get("gui.done")));
+        this.buttons.add(new ButtonWidget(0, this.width / 2, this.height - 48, 150, 20, var1.get("gui.done")));
+        this.buttons.add(new ButtonWidget(1, this.width / 2 - 150, this.height - 48, 150, 20, "More"));
         this.entryList = new ItemEntryList(this);
         this.entryList.registerButtons(this.buttons, 7, 8);
     }

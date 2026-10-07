@@ -13,44 +13,19 @@ public class Dispatcher
 	private static LightSource[] lightSourceLookup = new LightSource[MAX_LIGHT_SOURCE];
 	static int lightSourcesSize = 0;
 
-	public static int getBrightness(int ID)
-	{
-		ItemLightData data = of(ID);
-		return data != null && data.enabled ? data.brightness : 0;
-	}
-	
-	public static int getRange(int ID)
-	{
-		ItemLightData data = of(ID);
-		return data != null && data.enabled ? data.range : 0;
-	}
-	
-	public static int getTimer(int ID)
-	{
-		ItemLightData data = of(ID);
-		return data != null && data.enabled ? data.timer : -1;
-	}
-	
-	public static boolean workUnderWater(int ID)
-	{
-		ItemLightData data = of(ID);
-		return data != null && data.enabled && data.underwater;
-	}
-
-	private static ItemLightData of(int id) {
-		return DynamicLightLoader.lightdataMap.get(Item.ITEMS[id]);
+	public static ItemLightData of(int id) {
+		return DynamicLightLoader.lightdataMap.get(id);
 	}
 	
 	public static int getBrightness(int i, int j, int k)
 	{
 		if(lightSourcesSize == 0) return 0;
 
-		double torchLight = 0.0F;
+		int torchLight = 0;
 		
-		double lightBuffer;
+		int lightBuffer;
 
-		int startIndex = hashAt(i, j, k) % lightSourcesSize;
-		for(int l = startIndex; l < lightSourcesSize; ++l) {
+		for(int l = hashAt(i, j, k); l < lightSourcesSize; ++l) {
 			lightBuffer = lightSourceLookup[l].getLight(i, j, k);
 			if(lightBuffer > torchLight)
 			{
@@ -62,7 +37,7 @@ public class Dispatcher
 	}
 
 	public static int hashCell(int cellX, int cellY, int cellZ) {
-		return Math.abs(((cellX + 31) * 19 + cellY) * 41 + cellZ) * 83 & (lightSourceLookup.length - 1);
+		return Math.abs(((cellX + 31) * 19 + cellY) * 41 + cellZ) * 83 & (lightSourcesSize - 1);
 	}
 
 	public static int hashAt(int x, int y, int z) {
