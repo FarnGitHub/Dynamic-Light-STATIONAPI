@@ -29,4 +29,8 @@ public class ItemLightInfo {
     public Item getItem() {
         return ItemRegistry.INSTANCE.get(Identifier.of(identifier));
     }
+
+    public static ItemLightInfo of(int id) {
+        return ItemLightInfoLoader.id2info.get(id);
+    }
 }

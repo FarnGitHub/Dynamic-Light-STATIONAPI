@@ -63,7 +63,7 @@ public class WorldTick {
             if (ID != torchLoopClass.currentItemID)
             {
                 torchLoopClass.currentItemID = ID;
-                ItemLightInfo data = DynamicLightEngine.of(ID);
+                ItemLightInfo data = ItemLightInfo.of(ID);
                 if (data != null && data.enabled) {
                     torchLoopClass.setBrightness(data.brightness);
                     torchLoopClass.setRange(data.range);
@@ -107,7 +107,7 @@ public class WorldTick {
             if (tempent instanceof PlayerEntity || shouldEntityEmitLight(tempent)) {
                 tempList.add(tempent);
             } else if (tempent instanceof ItemEntity helpitem) {
-                ItemLightInfo data = DynamicLightEngine.of(helpitem.stack.itemId);
+                ItemLightInfo data = ItemLightInfo.of(helpitem.stack.itemId);
                 if (data != null && data.enabled) {
                     tempList.add(tempent);
                 }
@@ -131,7 +131,7 @@ public class WorldTick {
             LightSource newtorch;
             if(newent instanceof ItemEntity institem)
             {
-                ItemLightInfo data = DynamicLightEngine.of(institem.stack.itemId);
+                ItemLightInfo data = ItemLightInfo.of(institem.stack.itemId);
                 if(data != null && data.enabled) {
                     addLight(newtorch = new LightSource(newent));
                     newtorch.setBrightness(data.brightness);
