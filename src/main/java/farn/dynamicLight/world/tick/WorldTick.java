@@ -36,7 +36,6 @@ public class WorldTick {
 
         if (world != null && System.currentTimeMillis() >= prevTime + 50L)
         {
-            ChunkUpdater.updateAllDirty(world);
             collectEntity(world);
             tickEntity();
             prevTime = System.currentTimeMillis();
@@ -174,7 +173,6 @@ public class WorldTick {
 
     public static void clearLightSources() {
         lightSources.clear();
-        ChunkUpdater.clearAllDirty();
         lightSourcesChanged = true;
     }
 }
