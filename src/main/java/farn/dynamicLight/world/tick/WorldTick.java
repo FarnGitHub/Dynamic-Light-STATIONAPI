@@ -46,8 +46,6 @@ public class WorldTick {
 
             if(torchent instanceof PlayerEntity entPlayer) {
                 tickPlayer(torchLoopClass, entPlayer);
-            } else if(torchent instanceof ItemEntity itemEntity) {
-                tickItemEntity(torchLoopClass, itemEntity);
             } else {
                 torchLoopClass.setPos(torchent.x, torchent.y, torchent.z);
             }
@@ -89,14 +87,6 @@ public class WorldTick {
     private static void tickItemEntity(LightSource torchLoopClass, Entity torchent)
     {
         torchLoopClass.setPos(torchent.x, torchent.y, torchent.z);
-
-        if (!torchLoopClass.hasNoTimer()) {
-            if (torchLoopClass.isDead()) {
-                torchLoopClass.setState(false);
-            } else {
-                torchLoopClass.timerTick();
-            }
-        }
     }
 
     private static void collectEntity(World world) {
@@ -136,7 +126,6 @@ public class WorldTick {
                     addLight(newtorch = new LightSource(newent));
                     newtorch.setBrightness(data.brightness);
                     newtorch.setRange(data.range);
-                    newtorch.setTimer(data.timer);
                     newtorch.setWorkUnderWater(data.underwater);
                     newtorch.setState(true);
                 }

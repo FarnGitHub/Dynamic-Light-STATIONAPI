@@ -9,7 +9,6 @@ public class ItemLightInfo {
     public String identifier;
     public int brightness;
     public int range;
-    public int timer;
     public boolean underwater;
 
     @Expose(deserialize = false, serialize = false)
@@ -17,14 +16,6 @@ public class ItemLightInfo {
 
     @Expose(deserialize = false, serialize = false)
     public String itemNames;
-
-    public ItemLightInfo(String id, int brightness, int range, int deathAge, boolean underwater) {
-        this.identifier = id;
-        this.brightness = brightness;
-        this.range = range;
-        this.timer = deathAge;
-        this.underwater = underwater;
-    }
 
     public Item getItem() {
         return ItemRegistry.INSTANCE.get(Identifier.of(identifier));

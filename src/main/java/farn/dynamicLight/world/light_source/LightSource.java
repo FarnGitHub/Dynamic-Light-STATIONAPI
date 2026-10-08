@@ -18,7 +18,6 @@ public class LightSource{
 	private final Entity target;
 	public int currentItemID = 0;
 	private boolean worksUnderwater = true;
-	public int timer = -1;
 	private long updateTime;
 
     public LightSource(Entity entity)
@@ -28,7 +27,7 @@ public class LightSource{
 
     public boolean active()
     {
-        return (isLit && target.isAlive() && !notWorkUnderwater());
+        return (isLit && target.isAlive() && workUnderwater());
     }
 
     public void setState(boolean lit, boolean forceUpdate)
@@ -62,7 +61,7 @@ public class LightSource{
 
 	public int getLight(int x, int y, int z)
 	{
-		if (isLit && !notWorkUnderwater()) {
+		if (isLit && workUnderwater()) {
 			double dx = x - posX + 0.5;
 			double dy = y - posY + 0.5;
 			double dz = z - posZ + 0.5;
@@ -74,10 +73,9 @@ public class LightSource{
 		return 0;
 	}
 
-	@SuppressWarnings("all")
-	private boolean notWorkUnderwater()
+	private boolean workUnderwater()
 	{
-		return (!worksUnderwater && target.isInFluid(Material.WATER));
+		return worksUnderwater && !target.isInFluid(Material.WATER);
 	}
 
 
@@ -111,24 +109,5 @@ public class LightSource{
 	public void setWorkUnderWater(boolean works)
 	{
 		worksUnderwater = works;
-	}
-	
-	public void setTimer(int age)
-	{
-		timer = age;
-	}
-	
-	public void timerTick()
-	{
-		timer--;
-	}
-	
-	public boolean hasNoTimer()
-	{
-		return (timer != -1);
-	}
-	
-	public boolean isDead() {
-		return (timer == 0);
 	}
 }
