@@ -18,7 +18,6 @@ public class WorldTick {
     private static long prevTime;
 
     private static final List<LightSource> lightSources = new ArrayList<>();
-    private static boolean lightSourcesChanged = false;
 
     private static World curWorld;
 
@@ -86,11 +85,6 @@ public class WorldTick {
         }
     }
 
-    private static void tickItemEntity(LightSource torchLoopClass, Entity torchent)
-    {
-        torchLoopClass.setPos(torchent.x, torchent.y, torchent.z);
-    }
-
     private static void collectEntity(World world) {
         List<Entity> tempList = new ArrayList<>();
 
@@ -141,8 +135,7 @@ public class WorldTick {
             }
         }
 
-        if(lightSourcesChanged)
-            DynamicLightEngine.computeLightSource(lightSources);
+        DynamicLightEngine.computeLightSource(lightSources);
     }
 
     private static boolean shouldEntityEmitLight(Entity ent) {
@@ -161,18 +154,15 @@ public class WorldTick {
             lightSources.remove(0);
 
         lightSources.add(playertorch);
-        lightSourcesChanged = true;
     }
 
     public static void removeLight(LightSource playertorch, Iterator<LightSource> iterator)
     {
         playertorch.setState(false);
         iterator.remove();
-        lightSourcesChanged = true;
     }
 
     public static void clearLightSources() {
         lightSources.clear();
-        lightSourcesChanged = true;
     }
 }
