@@ -2,6 +2,5 @@
   "identifier" : "minecraft:redstone_torch_lit",
   "brightness" : 10,
   "range": 21,
-  "timer": -1,
   "underwater": false
 }

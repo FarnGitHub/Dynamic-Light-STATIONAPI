@@ -67,7 +67,7 @@ public class LightSource{
 			double dz = z - posZ + 0.5;
 			double distanceSquared = dx * dx + dy * dy + dz * dz;
 			if (distanceSquared <= range * range) {
-				return (int)(brightness - MathHelper.sqrt(distanceSquared));
+				return (int)(brightness - Math.sqrt(distanceSquared));
 			}
 		}
 		return 0;
@@ -75,7 +75,7 @@ public class LightSource{
 
 	private boolean workUnderwater()
 	{
-		return worksUnderwater && !target.isInFluid(Material.WATER);
+		return worksUnderwater || !target.isInFluid(Material.WATER);
 	}
 
 
