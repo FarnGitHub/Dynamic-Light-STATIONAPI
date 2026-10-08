@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_17",
   "client": [
     "WorldMixin",
-    "WorldRegionMixin"
+    "WorldRegionMixin",
+    "GameRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

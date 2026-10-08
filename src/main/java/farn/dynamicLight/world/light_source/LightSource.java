@@ -1,9 +1,8 @@
 package farn.dynamicLight.world.light_source;
 
-import farn.dynamicLight.world.tick.ChunkUpdater;
 import net.minecraft.block.material.Material;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.MathHelper;
 
 public class LightSource{
 	boolean isLit = false;
@@ -55,7 +54,7 @@ public class LightSource{
 			iX = flooredX;
 			iY = flooredY;
 			iZ = flooredZ;
-			markDirty(false);
+			this.markDirty(false);
 		}
     }
 
@@ -81,7 +80,13 @@ public class LightSource{
 
     public void markDirty(boolean forceUpdate) {
 		if (System.currentTimeMillis() < this.updateTime+100L && !forceUpdate) return;
-		ChunkUpdater.markDirty(this.iX-this.brightness, this.iZ-this.brightness, this.iX+this.brightness, this.iZ+this.brightness);
+		Minecraft.INSTANCE.world.setBlocksDirty(
+				this.iX-this.brightness,
+				this.iY-this.brightness,
+				this.iZ-this.brightness,
+				this.iX+this.brightness,
+				this.iY+this.brightness,
+				this.iZ+this.brightness);
 		this.updateTime = System.currentTimeMillis();
 	}
 	

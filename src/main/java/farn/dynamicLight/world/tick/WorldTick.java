@@ -1,6 +1,7 @@
 package farn.dynamicLight.world.tick;
 
 import farn.dynamicLight.config.ItemLightInfo;
+import farn.dynamicLight.config.ItemLightInfoLoader;
 import farn.dynamicLight.world.light_source.DynamicLightEngine;
 import farn.dynamicLight.world.light_source.LightSource;
 import net.minecraft.entity.Entity;
@@ -26,6 +27,8 @@ public class WorldTick {
 
     public static void tick(World world)
     {
+        if(ItemLightInfoLoader.reloading) return;
+
         if(world != curWorld) {
             curWorld = world;
             clearLightSources();
@@ -33,9 +36,9 @@ public class WorldTick {
 
         if (world != null && System.currentTimeMillis() >= prevTime + 50L)
         {
+            ChunkUpdater.updateAllDirty(world);
             collectEntity(world);
             tickEntity();
-            ChunkUpdater.updateAllDirty(world);
             prevTime = System.currentTimeMillis();
         }
     }

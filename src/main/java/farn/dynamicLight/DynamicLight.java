@@ -47,10 +47,4 @@ public class DynamicLight {
                 DummyProfiler.INSTANCE
         );
     }
-
-    @EventListener
-    public static void worldTick(GameTickEvent.End ev) {
-        if(!ItemLightInfoLoader.reloading)
-            WorldTick.tick(Minecraft.INSTANCE.world);
-    }
 }
