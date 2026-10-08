@@ -15,7 +15,6 @@ public class LightSource{
 	public int iZ;
 	private int brightness = 15;
 	private int range = 31;
-	byte[] cache = new byte[29791];
 	private final Entity target;
 	public int currentItemID = 0;
 	private boolean worksUnderwater = true;
@@ -64,13 +63,12 @@ public class LightSource{
 	public int getLight(int x, int y, int z)
 	{
 		if (isLit && !notWorkUnderwater()) {
-			int diffX = x - iX + brightness;
-			int diffY = y - iY + brightness;
-			int diffZ = z - iZ + brightness;
-
-			if ((diffX >= 0) && (diffX < range) && (diffY >= 0) && (diffY < range) && (diffZ >= 0) && (diffZ < range))
-			{
-				return cache[(diffX * range * range + diffY * range + diffZ)];
+			double dx = x - posX + 0.5;
+			double dy = y - posY + 0.5;
+			double dz = z - posZ + 0.5;
+			double distanceSquared = dx * dx + dy * dy + dz * dz;
+			if (distanceSquared <= range * range) {
+				return (int)(brightness - MathHelper.sqrt(distanceSquared));
 			}
 		}
 		return 0;
@@ -85,33 +83,8 @@ public class LightSource{
 
     public void markDirty(boolean forceUpdate) {
 		if (System.currentTimeMillis() < this.updateTime+100L && !forceUpdate) return;
-		this.updateCache();
 		ChunkUpdater.markDirty(this.iX-this.brightness, this.iZ-this.brightness, this.iX+this.brightness, this.iZ+this.brightness);
 		this.updateTime = System.currentTimeMillis();
-	}
-
-	private void updateCache() {
-		int index = 0;
-		for(int rX = -this.brightness; rX <= this.brightness; ++rX) {
-			int x = rX + this.iX;
-
-			for(int rY = -this.brightness; rY <= this.brightness; ++rY) {
-				int y = rY + this.iY;
-
-				for(int rZ = -this.brightness; rZ <= this.brightness; ++rZ) {
-					int z = rZ + this.iZ;
-					double dx = x - posX + 0.5;
-					double dy = y - posY + 0.5;
-					double dz = z - posZ + 0.5;
-					double distanceSquared = dx * dx + dy * dy + dz * dz;
-					if (distanceSquared <= range * range) {
-						cache[index] = (byte)(brightness - (MathHelper.sqrt(distanceSquared) / range * 30D));
-					}
-					++index;
-					if(index >= cache.length) return;
-				}
-			}
-		}
 	}
 	
 	public void setBrightness(int i)
