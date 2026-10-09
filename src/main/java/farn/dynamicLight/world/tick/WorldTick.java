@@ -135,7 +135,7 @@ public class WorldTick {
             }
         }
 
-        DynamicLightEngine.computeLightSource(lightSources);
+        DynamicLightEngine.computeLookup(lightSources);
     }
 
     private static boolean shouldEntityEmitLight(Entity ent) {
@@ -150,9 +150,6 @@ public class WorldTick {
 
     public static void addLight(LightSource playertorch)
     {
-        if(lightSources.size() > DynamicLightEngine.MAX_LIGHT_SOURCE)
-            lightSources.remove(0);
-
         lightSources.add(playertorch);
     }
 
