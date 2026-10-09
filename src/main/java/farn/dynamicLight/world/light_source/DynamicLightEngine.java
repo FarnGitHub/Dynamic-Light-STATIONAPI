@@ -7,7 +7,7 @@ import java.util.*;
 
 public class DynamicLightEngine
 {
-	public static final int MAX_LIGHT_SOURCE = 128;
+	private static final int MAX_LIGHT_SOURCE = 128;
 	private static final Vec3i[] CELL_OFFSETS;
 	private static final LookupEntry[] lookups = new LookupEntry[MAX_LIGHT_SOURCE];
 	private static final int[] startIndices = new int[MAX_LIGHT_SOURCE];
