@@ -28,7 +28,6 @@ public class ItemLightInfoLoader {
     public static void reload(Map<Identifier, Resource> prepared) {
         reloading = true;
         id2info.clear();
-        clearCache();
         for(Map.Entry<Identifier, Resource> entry : prepared.entrySet()) {
             ItemLightInfo data = null;
             try {
@@ -50,10 +49,6 @@ public class ItemLightInfoLoader {
         reloading = false;
     }
 
-    public static void clearCache() {
-        WorldTick.clearLightSources();
-    }
-
     public static void readConfig(boolean forceWrite) {
         if(!cfgFile.exists() || forceWrite){
             writeConfig();
@@ -70,7 +65,6 @@ public class ItemLightInfoLoader {
 
     public static void readConfig() {
         reloading = true;
-        clearCache();
         readConfig(true);
         reloading = false;
     }

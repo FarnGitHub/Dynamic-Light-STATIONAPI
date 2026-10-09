@@ -7,10 +7,11 @@ import java.util.*;
 
 public class DynamicLightEngine
 {
-	private static final int MAX_LIGHT_SOURCE = 128;
+	public static final int DEFAULT_SIZE = 128;
+
 	private static final Vec3i[] CELL_OFFSETS;
-	private static final LookupEntry[] lookups = new LookupEntry[MAX_LIGHT_SOURCE];
-	private static final int[] startIndices = new int[MAX_LIGHT_SOURCE];
+	private static LookupEntry[] lookups = new LookupEntry[DEFAULT_SIZE];
+	private static int[] startIndices = new int[DEFAULT_SIZE];
 
 	public static int getBrightness(int x, int y, int z, int light)
 	{
@@ -32,33 +33,34 @@ public class DynamicLightEngine
 		return Math.min(Math.max(light, 0), 15);
 	}
 
-	public static int hashCell(int cellX, int cellY, int cellZ) {
+	private static int hashCell(int cellX, int cellY, int cellZ) {
 		return Math.abs(((cellX + 31) * 19 + cellY) * 41 + cellZ) * 83 & (lookups.length - 1);
 	}
 
-	public static int hashAt(int x, int y, int z) {
+	private static int hashAt(int x, int y, int z) {
 		return hashCell(positionToCell(x), positionToCell(y), positionToCell(z));
 	}
-	public static int hashAt(LightSource source) {
+	private static int hashAt(LightSource source) {
 		return hashAt(source.iX, source.iY, source.iZ);
 	}
 
-	public static int positionToCell(int coordinate) {
+	private static int positionToCell(int coordinate) {
 		return coordinate >> 3;
 	}
 
+	public static void resizeLookups(int newSize) {
+		lookups = new LookupEntry[newSize];
+		startIndices = new int[newSize];
+	}
+
+	public static void resetLookups() {
+		resizeLookups(DEFAULT_SIZE);
+	}
+
 	public static void computeLookup(Collection<LightSource> sources) {
-
-		Arrays.fill(lookups, null);
-		Arrays.fill(startIndices, Integer.MAX_VALUE);
-
 		if(sources.isEmpty()) return;
-		Iterator<LookupEntry> it =
-				sources.stream().
-				limit(MAX_LIGHT_SOURCE).
-				map(LookupEntry::of).
-				sorted().iterator();
 
+		Iterator<LookupEntry> it = computeLookupIterator(sources);
 		int i = 0;
 		while (it.hasNext()) {
 			lookups[i] = it.next();
@@ -71,11 +73,22 @@ public class DynamicLightEngine
 
 			int key = entry.cellKey();
 			int previousKey = i == 0 ? Integer.MAX_VALUE : lookups[i - 1].cellKey();
-			if (key != previousKey) {
-				startIndices[key] = i;
-			}
+			if (key != previousKey) startIndices[key] = i;
+		}
+	}
+
+	private static Iterator<LookupEntry> computeLookupIterator(Collection<LightSource> sources) {
+		if(sources.size() > lookups.length * .95f) {
+			resizeLookups(lookups.length * 2);
+			return computeLookupIterator(sources);
 		}
 
+		Arrays.fill(lookups, null);
+		Arrays.fill(startIndices, Integer.MAX_VALUE);
+		return sources.stream().
+				limit(lookups.length).
+				map(LookupEntry::of).
+				sorted().iterator();
 	}
 
 	static {

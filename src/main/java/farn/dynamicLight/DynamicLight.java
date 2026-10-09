@@ -1,16 +1,12 @@
 package farn.dynamicLight;
 
-import farn.dynamicLight.config.ItemLightInfoLoader;
 import farn.dynamicLight.config.ItemLightInfoReloader;
-import farn.dynamicLight.world.tick.WorldTick;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mine_diver.unsafeevents.listener.EventListener;
 import net.mine_diver.unsafeevents.listener.ListenerPriority;
-import net.minecraft.client.Minecraft;
 import net.modificationstation.stationapi.api.event.mod.InitEvent;
 import net.modificationstation.stationapi.api.event.resource.DataReloadEvent;
 import net.modificationstation.stationapi.api.event.resource.DataResourceReloaderRegisterEvent;
-import net.modificationstation.stationapi.api.event.tick.GameTickEvent;
 import net.modificationstation.stationapi.api.mod.entrypoint.Entrypoint;
 import net.modificationstation.stationapi.api.mod.entrypoint.EntrypointManager;
 import net.modificationstation.stationapi.api.resource.DataManager;

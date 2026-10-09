@@ -30,7 +30,7 @@ public class WorldTick {
 
         if(world != curWorld) {
             curWorld = world;
-            clearLightSources();
+            clearCache();
         }
 
         if (world != null && System.currentTimeMillis() >= prevTime + 50L)
@@ -159,7 +159,8 @@ public class WorldTick {
         iterator.remove();
     }
 
-    public static void clearLightSources() {
+    public static void clearCache() {
         lightSources.clear();
+        DynamicLightEngine.resetLookups();
     }
 }
