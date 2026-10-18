@@ -1,18 +1,14 @@
 package farn.dynamicLight;
 
-import farn.dynamicLight.config.ItemLightInfoReloader;
+import farn.dynamicLight.config.DynamicLightConfig;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mine_diver.unsafeevents.listener.EventListener;
-import net.mine_diver.unsafeevents.listener.ListenerPriority;
 import net.modificationstation.stationapi.api.event.mod.InitEvent;
-import net.modificationstation.stationapi.api.event.resource.DataReloadEvent;
 import net.modificationstation.stationapi.api.event.resource.DataResourceReloaderRegisterEvent;
 import net.modificationstation.stationapi.api.mod.entrypoint.Entrypoint;
 import net.modificationstation.stationapi.api.mod.entrypoint.EntrypointManager;
-import net.modificationstation.stationapi.api.resource.DataManager;
 import net.modificationstation.stationapi.api.util.Namespace;
 import net.modificationstation.stationapi.api.util.Null;
-import net.modificationstation.stationapi.api.util.profiler.DummyProfiler;
 import org.apache.logging.log4j.Logger;
 
 @SuppressWarnings("unused")
@@ -29,18 +25,7 @@ public class DynamicLight {
     }
 
     @EventListener
-    public void registerReloader(DataResourceReloaderRegisterEvent e) {
-        e.resourceManager.registerReloader(ItemLightInfoReloader.INSTANCE);
-    }
-
-    @EventListener(priority = ListenerPriority.LOWEST)
-    public void dataEvent(DataReloadEvent event) {
-        ItemLightInfoReloader.INSTANCE.apply(
-                ItemLightInfoReloader.INSTANCE.prepare(
-                        DataManager.INSTANCE,
-                        DummyProfiler.INSTANCE),
-                DataManager.INSTANCE,
-                DummyProfiler.INSTANCE
-        );
+    public void registerReloader(DataResourceReloaderRegisterEvent event) {
+        event.resourceManager.registerReloader(DynamicLightConfig.Reloader.INSTANCE);
     }
 }

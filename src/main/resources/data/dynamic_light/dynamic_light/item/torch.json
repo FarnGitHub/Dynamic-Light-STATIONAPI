@@ -1,6 +1,5 @@
 {
   "identifier" : "minecraft:torch",
   "brightness" : 15,
-  "range": 31,
   "underwater": false
 }

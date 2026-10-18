@@ -1,19 +1,35 @@
-package farn.dynamicLight.world.light_source;
+package farn.dynamicLight.world.tick;
 
+import farn.dynamicLight.world.light_source.LightSource;
 import net.minecraft.util.math.Vec3i;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class DynamicLightEngine
-{
-	public static final int DEFAULT_SIZE = 128;
+public enum DynamicLightEngine {
+	INST;
 
-	private static final Vec3i[] CELL_OFFSETS;
-	private static LookupEntry[] lookups = new LookupEntry[DEFAULT_SIZE];
-	private static int[] startIndices = new int[DEFAULT_SIZE];
+	public final int DEFAULT_SIZE = 128;
 
-	public static int getBrightness(int x, int y, int z, int light)
+	private final Vec3i[] CELL_OFFSETS;
+	private LookupEntry[] lookups = new LookupEntry[DEFAULT_SIZE];
+	private int[] startIndices = new int[DEFAULT_SIZE];
+
+	DynamicLightEngine() {
+		CELL_OFFSETS = new Vec3i[27];
+		int i = 0;
+
+		for (int x = -1; x <= 1; x++) {
+			for (int y = -1; y <= 1; y++) {
+				for (int z = -1; z <= 1; z++) {
+					CELL_OFFSETS[i] = new Vec3i(x, y, z);
+					i++;
+				}
+			}
+		}
+	}
+
+	public int getBrightness(int x, int y, int z, int light)
 	{
 		int cX = positionToCell(x);
 		int cY = positionToCell(y);
@@ -25,7 +41,7 @@ public class DynamicLightEngine
 				LookupEntry lookup = lookups[l];
 				if(lookup == null || lookup.cellKey != hash) break;
 
-				int torchLight = lookup.source.getLight(x, y, z);
+				int torchLight = lookup.source.getLightLevel(x, y, z);
 				if(torchLight > light) light = torchLight;
 			}
 		}
@@ -33,31 +49,31 @@ public class DynamicLightEngine
 		return Math.min(Math.max(light, 0), 15);
 	}
 
-	private static int hashCell(int cellX, int cellY, int cellZ) {
+	private int hashCell(int cellX, int cellY, int cellZ) {
 		return Math.abs(((cellX + 31) * 19 + cellY) * 41 + cellZ) * 83 & (lookups.length - 1);
 	}
 
-	private static int hashAt(int x, int y, int z) {
+	private int hashAt(int x, int y, int z) {
 		return hashCell(positionToCell(x), positionToCell(y), positionToCell(z));
 	}
-	private static int hashAt(LightSource source) {
+	private int hashAt(LightSource source) {
 		return hashAt(source.iX, source.iY, source.iZ);
 	}
 
-	private static int positionToCell(int coordinate) {
+	private int positionToCell(int coordinate) {
 		return coordinate >> 3;
 	}
 
-	public static void resizeLookups(int newSize) {
+	public void resizeLookups(int newSize) {
 		lookups = new LookupEntry[newSize];
 		startIndices = new int[newSize];
 	}
 
-	public static void resetLookups() {
+	public void resetLookups() {
 		resizeLookups(DEFAULT_SIZE);
 	}
 
-	public static void computeLookup(Collection<LightSource> sources) {
+	public void computeLookup(Collection<LightSource> sources) {
 		if(sources.isEmpty()) return;
 
 		Iterator<LookupEntry> it = computeLookupIterator(sources);
@@ -77,7 +93,7 @@ public class DynamicLightEngine
 		}
 	}
 
-	private static Iterator<LookupEntry> computeLookupIterator(Collection<LightSource> sources) {
+	private Iterator<LookupEntry> computeLookupIterator(Collection<LightSource> sources) {
 		if(sources.size() > lookups.length * .95f) {
 			resizeLookups(lookups.length * 2);
 			return computeLookupIterator(sources);
@@ -91,23 +107,9 @@ public class DynamicLightEngine
 				sorted().iterator();
 	}
 
-	static {
-		CELL_OFFSETS = new Vec3i[27];
-		int i = 0;
-
-		for (int x = -1; x <= 1; x++) {
-			for (int y = -1; y <= 1; y++) {
-				for (int z = -1; z <= 1; z++) {
-					CELL_OFFSETS[i] = new Vec3i(x, y, z);
-					i++;
-				}
-			}
-		}
-	}
-
 	private record LookupEntry(int cellKey, LightSource source) implements Comparable<LookupEntry> {
 		static LookupEntry of(LightSource l) {
-			return new LookupEntry(hashAt(l), l);
+			return new LookupEntry(INST.hashAt(l), l);
 		}
 
 		@Override

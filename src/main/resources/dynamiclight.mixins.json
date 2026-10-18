@@ -6,7 +6,7 @@
   "client": [
     "WorldMixin",
     "WorldRegionMixin",
-    "GameRendererMixin"
+    "MinecraftMixin"
   ],
   "injectors": {
     "defaultRequire": 1

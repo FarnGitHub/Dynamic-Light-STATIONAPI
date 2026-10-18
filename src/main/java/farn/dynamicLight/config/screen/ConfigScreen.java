@@ -1,7 +1,8 @@
 package farn.dynamicLight.config.screen;
 
-import farn.dynamicLight.config.ItemLightInfo;
-import farn.dynamicLight.config.ItemLightInfoLoader;
+import farn.dynamicLight.config.data.LightData;
+import farn.dynamicLight.config.DynamicLightConfig;
+import farn.dynamicLight.config.data.LightDatas;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -45,26 +46,25 @@ public class ConfigScreen extends Screen{
     }
 
     public void removed() {
-        ItemLightInfoLoader.readConfig();
+        DynamicLightConfig.INSTANCE.read();
         super.removed();
     }
 
     private class ItemLightInfoEntry extends EntryListWidget {
-        private final List<ItemLightInfo> datas;
+        private final List<LightData> datas = new ArrayList<>(LightDatas.INSTANCE.valuesView());
 
         public ItemLightInfoEntry() {
             super(Minecraft.INSTANCE, ConfigScreen.this.width, ConfigScreen.this.height, 8, ConfigScreen.this.height - 55 + 4, 24);
-            this.datas = new ArrayList<>(ItemLightInfoLoader.id2info.values());
         }
 
         @Override
         protected int getEntryCount() {
-            return ItemLightInfoLoader.id2info.size();
+            return datas.size();
         }
 
         @Override
         protected void entryClicked(int index, boolean doubleClick) {
-            ItemLightInfo test = datas.get(index);
+            LightData test = datas.get(index);
             test.enabled = !test.enabled;
         }
 
@@ -80,13 +80,13 @@ public class ConfigScreen extends Screen{
 
         @Override
         protected void renderEntry(int index, int x, int y, int i, Tessellator tessellator) {
-            ItemLightInfo test = datas.get(index);
+            LightData test = datas.get(index);
             String lmo = test.itemNames;
             ConfigScreen.this.textRenderer.draw(lmo, x, y + (itemHeight / 4), 14737632);
             this.renderButton(ConfigScreen.this.width / 2 + 80, y + (itemHeight / 4) - 5, test);
         }
 
-        private void renderButton(int x, int y, ItemLightInfo data) {
+        private void renderButton(int x, int y, LightData data) {
             GL11.glBindTexture(3553, Minecraft.INSTANCE.textureManager.getTextureId("/gui/gui.png"));
             GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             ConfigScreen.this.drawTexture(x, y, 0, 46 + 20, 30 / 2, 20);

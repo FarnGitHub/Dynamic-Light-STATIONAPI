@@ -12,38 +12,69 @@ public class LightSource{
 	public int iX;
 	public int iY;
 	public int iZ;
-	private int brightness = 15;
-	private int range = 31;
+	private byte brightness = 15;
+	private int squaredRange = 225;
 	private final Entity target;
-	public int currentItemID = 0;
 	private boolean worksUnderwater = true;
 	private long updateTime;
 
-    public LightSource(Entity entity)
-    {
+    public LightSource(Entity entity) {
 		target = entity;
     }
 
-    public boolean active()
-    {
+	public void tick() {
+		if (this.active()) {
+			this.setPos(target.x, target.y, target.z);
+		}
+	}
+
+    public boolean active(){
         return (isLit && target.isAlive() && workUnderwater());
     }
 
-    public void setState(boolean lit, boolean forceUpdate)
-    {
-		if(this.isLit != lit || forceUpdate) {
+	public void setBrightness(int brightness){
+		this.brightness = (byte)brightness;
+		this.squaredRange = brightness * brightness;
+	}
+
+	@SuppressWarnings("unused")
+	public int getBrightness() {
+		return brightness;
+	}
+
+	public Entity getEntity() {
+		return target;
+	}
+
+	public void setWorkUnderWater(boolean works) {
+		worksUnderwater = works;
+	}
+
+	private boolean workUnderwater() {
+		return worksUnderwater || !target.isInFluid(Material.WATER);
+	}
+
+	public int getLightLevel(int x, int y, int z) {
+		if (active()) {
+			double dx = x - posX + 0.5;
+			double dy = y - posY + 0.5;
+			double dz = z - posZ + 0.5;
+			double distanceSquared = dx * dx + dy * dy + dz * dz;
+			if (distanceSquared <= squaredRange) {
+				return (int)(brightness - Math.sqrt(distanceSquared));
+			}
+		}
+		return 0;
+	}
+
+	public void setLit(boolean lit) {
+		if(this.isLit != lit) {
 			this.isLit = lit;
 			this.markDirty(true);
 		}
-    }
-
-	public void setState(boolean lit)
-	{
-		setState(lit, false);
 	}
 
-    public void setPos(double x, double y, double z)
-    {
+    public void setPos(double x, double y, double z) {
 		int flooredX = (int) x;
 		int flooredY = (int) y;
 		int flooredZ = (int) z;
@@ -58,28 +89,8 @@ public class LightSource{
 		}
     }
 
-	public int getLight(int x, int y, int z)
-	{
-		if (isLit && workUnderwater()) {
-			double dx = x - posX + 0.5;
-			double dy = y - posY + 0.5;
-			double dz = z - posZ + 0.5;
-			double distanceSquared = dx * dx + dy * dy + dz * dz;
-			if (distanceSquared <= range * range) {
-				return (int)(brightness - Math.sqrt(distanceSquared));
-			}
-		}
-		return 0;
-	}
-
-	private boolean workUnderwater()
-	{
-		return worksUnderwater || !target.isInFluid(Material.WATER);
-	}
-
-
-    public void markDirty(boolean forceUpdate) {
-		if (System.currentTimeMillis() < this.updateTime+100L && !forceUpdate) return;
+    public void markDirty(boolean force) {
+		if (!force && System.currentTimeMillis() < this.updateTime+100L) return;
 		Minecraft.INSTANCE.world.setBlocksDirty(
 				this.iX-this.brightness,
 				this.iY-this.brightness,
@@ -88,31 +99,5 @@ public class LightSource{
 				this.iY+this.brightness,
 				this.iZ+this.brightness);
 		this.updateTime = System.currentTimeMillis();
-	}
-	
-	public void setBrightness(int i)
-	{
-		brightness = i;
-	}
-
-	@SuppressWarnings("unused")
-	public int getBrightness()
-	{
-		return brightness;
-	}
-	
-	public void setRange(int i)
-	{
-		range = i;
-	}
-	
-	public Entity getEntity()
-	{
-		return target;
-	}
-	
-	public void setWorkUnderWater(boolean works)
-	{
-		worksUnderwater = works;
 	}
 }

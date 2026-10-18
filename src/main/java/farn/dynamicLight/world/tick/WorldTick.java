@@ -1,9 +1,11 @@
 package farn.dynamicLight.world.tick;
 
-import farn.dynamicLight.config.ItemLightInfo;
-import farn.dynamicLight.config.ItemLightInfoLoader;
-import farn.dynamicLight.world.light_source.DynamicLightEngine;
+import farn.dynamicLight.config.data.LightData;
+import farn.dynamicLight.config.data.LightDatas;
 import farn.dynamicLight.world.light_source.LightSource;
+import farn.dynamicLight.world.light_source.PlayerLightSource;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.TntEntity;
@@ -13,154 +15,83 @@ import net.minecraft.world.World;
 
 import java.util.*;
 
-public class WorldTick {
+public enum WorldTick {
+    INST;
 
-    private static long prevTime;
+    private int tick;
+    private final List<LightSource> lightSources = new ArrayList<>();
+    private final ObjectSet<Entity> toAdd = new ObjectOpenHashSet<>();
+    private World world;
 
-    private static final List<LightSource> lightSources = new ArrayList<>();
-
-    private static World curWorld;
-
-    private WorldTick() {
+    public void setWorld(World world) {
+        this.world = world;
+        this.lightSources.clear();
+        this.toAdd.clear();
+        DynamicLightEngine.INST.resetLookups();
     }
 
-    public static void tick(World world)
-    {
-        if(ItemLightInfoLoader.reloading) return;
-
-        if(world != curWorld) {
-            curWorld = world;
-            clearCache();
-        }
-
-        if (world != null && System.currentTimeMillis() >= prevTime + 50L)
-        {
-            collectEntity(world);
-            tickEntity();
-            prevTime = System.currentTimeMillis();
-        }
-    }
-
-    private static void tickEntity() {
-        for(LightSource torchLoopClass : lightSources) {
-            Entity torchent = torchLoopClass.getEntity();
-
-            if(torchent instanceof PlayerEntity entPlayer) {
-                tickPlayer(torchLoopClass, entPlayer);
-            } else {
-                torchLoopClass.setPos(torchent.x, torchent.y, torchent.z);
-            }
-        }
-    }
-
-    private static void tickPlayer(LightSource torchLoopClass, PlayerEntity entPlayer)
-    {
-
-        if (entPlayer.getHand() != null)
-        {
-            int ID = entPlayer.getHand().itemId;
-            if (ID != torchLoopClass.currentItemID)
-            {
-                torchLoopClass.currentItemID = ID;
-                ItemLightInfo data = ItemLightInfo.of(ID);
-                if (data != null && data.enabled) {
-                    torchLoopClass.setBrightness(data.brightness);
-                    torchLoopClass.setRange(data.range);
-                    torchLoopClass.setWorkUnderWater(data.underwater);
-                    torchLoopClass.setState(true, true);
-                } else {
-                    torchLoopClass.setState(false);
-                }
-            }
-        }
-        else
-        {
-            torchLoopClass.currentItemID = 0;
-            torchLoopClass.setState(false);
-        }
-
-        if (torchLoopClass.active())
-        {
-            torchLoopClass.setPos(entPlayer.x, entPlayer.y, entPlayer.z);
-        }
-    }
-
-    private static void collectEntity(World world) {
-        List<Entity> tempList = new ArrayList<>();
+    public void tick() {
+        if (world == null || ++this.tick % 5 != 0) return;
 
         //noinspection unchecked
         for (Entity tempent : (Iterable<Entity>) world.entities) {
             if (tempent instanceof PlayerEntity || shouldEntityEmitLight(tempent)) {
-                tempList.add(tempent);
+                this.toAdd.add(tempent);
             } else if (tempent instanceof ItemEntity helpitem) {
-                ItemLightInfo data = ItemLightInfo.of(helpitem.stack.itemId);
+                LightData data = LightDatas.INSTANCE.of(helpitem.stack.itemId);
                 if (data != null && data.enabled) {
-                    tempList.add(tempent);
+                    this.toAdd.add(tempent);
                 }
             }
         }
-        // tempList is now a fresh list of all Entities that can have a PlayerTorch
-        Iterator<LightSource> itlightSources = lightSources.iterator();
-        while(itlightSources.hasNext()) { // loop the old PlayerTorch List
-            LightSource torchLoopClass = itlightSources.next();
-            Entity torchent = torchLoopClass.getEntity();
 
-            if (tempList.contains(torchent)) { // check if the old entities are still in the world
-                tempList.remove(torchent); // if so remove them from the fresh list
-            } else if (shouldRemoveLight(torchent)) {// delete dead stuff
-                removeLight(torchLoopClass, itlightSources); // else remove them from the PlayerTorch list
+        Iterator<LightSource> iterator = lightSources.iterator();
+        while(iterator.hasNext()) {
+            LightSource source = iterator.next();
+            Entity entity = source.getEntity();
+
+            if (this.toAdd.contains(entity)) {
+                this.toAdd.remove(entity);
+                source.tick();
+            } else if (shouldRemoveLight(entity)) {
+                source.setLit(false);
+                iterator.remove();
             }
         }
 
-        for(Entity newent : tempList) // now to loop the remainder of the fresh list, the NEW lights
-        {
-            LightSource newtorch;
-            if(newent instanceof ItemEntity institem)
-            {
-                ItemLightInfo data = ItemLightInfo.of(institem.stack.itemId);
-                if(data != null && data.enabled) {
-                    addLight(newtorch = new LightSource(newent));
-                    newtorch.setBrightness(data.brightness);
-                    newtorch.setRange(data.range);
-                    newtorch.setWorkUnderWater(data.underwater);
-                    newtorch.setState(true);
+        for(Entity entity : toAdd) { // now to loop the remainder of the fresh list, the NEW lights
+            if(entity instanceof PlayerEntity player) {
+                addLight(new PlayerLightSource(player));
+            } else if(entity instanceof ItemEntity institem) {
+                LightSource source = addLight(new LightSource(entity));
+                LightData data = LightDatas.INSTANCE.of(institem.stack.itemId);
+                if (data != null && data.enabled) {
+                    source.setBrightness(data.brightness);
+                    source.setWorkUnderWater(data.underwater);
+                    source.setLit(true);
                 }
-            } else if(shouldEntityEmitLight(newent) && !(newent instanceof PlayerEntity)) {
-                addLight(newtorch = new LightSource(newent));
-                newtorch.setBrightness(15);
-                newtorch.setRange(31);
-                newtorch.setState(true);
-            } else {
-                addLight(new LightSource(newent));
+            } else if(shouldEntityEmitLight(entity)) {
+                LightSource source = addLight(new LightSource(entity));
+                source.setBrightness(15);
+                source.setLit(true);
             }
         }
 
-        DynamicLightEngine.computeLookup(lightSources);
+        DynamicLightEngine.INST.computeLookup(lightSources);
     }
 
-    private static boolean shouldEntityEmitLight(Entity ent) {
+    private boolean shouldEntityEmitLight(Entity ent) {
         if(ent instanceof CreeperEntity creeperEntity)
             return creeperEntity.lastFuseTime > 0;
         return ent.isOnFire() || ent instanceof TntEntity;
     }
 
-    private static boolean shouldRemoveLight(Entity ent) {
+    private boolean shouldRemoveLight(Entity ent) {
         return !shouldEntityEmitLight(ent) || ent != null && !ent.isAlive();
     }
 
-    public static void addLight(LightSource playertorch)
-    {
-        lightSources.add(playertorch);
-    }
-
-    public static void removeLight(LightSource playertorch, Iterator<LightSource> iterator)
-    {
-        playertorch.setState(false);
-        iterator.remove();
-    }
-
-    public static void clearCache() {
-        lightSources.clear();
-        DynamicLightEngine.resetLookups();
+    private LightSource addLight(LightSource source) {
+        lightSources.add(source);
+        return source;
     }
 }
