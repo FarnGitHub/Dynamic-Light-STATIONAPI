@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Mixin;
 public class TntEntityMixin extends EntityMixin {
 
     @Override
-    public boolean dynamiclight_shouldAddToLightSource() {
+    public boolean dynamiclight_shouldAdd() {
         return true;
     }
 

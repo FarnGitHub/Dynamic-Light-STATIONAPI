@@ -1,7 +1,8 @@
 package farn.dynamicLight.world.tick;
 
 import farn.dynamicLight.world.light_source.LightSource;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 
@@ -11,14 +12,12 @@ public enum WorldTick {
     INST;
 
     private int tick;
-    private final List<LightSource> lightSources = new ArrayList<>(128);
-    private final Set<Entity> toAdd = new ObjectOpenHashSet<>(128);
+    private final Int2ObjectMap<LightSource> id2lightSources = new Int2ObjectOpenHashMap<>(128);
     private World world;
 
     public void setWorld(World world) {
         this.world = world;
-        this.lightSources.clear();
-        this.toAdd.clear();
+        this.id2lightSources.clear();
         DynamicLightEngine.INST.resetLookups();
     }
 
@@ -27,35 +26,31 @@ public enum WorldTick {
 
         //noinspection unchecked
         for (Entity entity : (Iterable<Entity>) world.entities)
-            if(entity.dynamiclight_shouldAddToLightSource())
-                this.toAdd.add(entity);
+            if(!id2lightSources.containsKey(entity.id) && entity.dynamiclight_shouldAdd())
+                addLight(entity.dynamiclight_createLightSource());
+
+        Collection<LightSource> lightSources = this.id2lightSources.values();
 
         Iterator<LightSource> iterator = lightSources.iterator();
         while(iterator.hasNext()) {
             LightSource source = iterator.next();
             Entity entity = source.getEntity();
 
-            if (this.toAdd.contains(entity)) {
-                this.toAdd.remove(entity);
-                source.tick();
-            } else if (shouldRemoveLight(entity)) {
+            if (shouldRemoveLight(entity)) {
                 source.setLit(false);
                 iterator.remove();
-            }
+            } else
+                source.tick();
         }
 
-        for (Entity entity : toAdd)
-            addLight(entity.dynamiclight_createLightSource());
-
-        toAdd.clear();
         DynamicLightEngine.INST.computeLookup(lightSources);
     }
 
     private boolean shouldRemoveLight(Entity ent) {
-        return ent != null && (!ent.dynamiclight_shouldAddToLightSource() || !ent.isAlive());
+        return ent != null && (!ent.dynamiclight_shouldAdd() || !ent.isAlive());
     }
 
     private void addLight(LightSource source) {
-        lightSources.add(source);
+        id2lightSources.put(source.getEntity().id, source);
     }
 }

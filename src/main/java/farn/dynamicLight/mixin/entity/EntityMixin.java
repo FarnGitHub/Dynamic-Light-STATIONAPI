@@ -14,7 +14,7 @@ public class EntityMixin implements DynamicLightEntity {
     }
 
     @Override
-    public boolean dynamiclight_shouldAddToLightSource() {
+    public boolean dynamiclight_shouldAdd() {
         return this.isOnFire();
     }
 

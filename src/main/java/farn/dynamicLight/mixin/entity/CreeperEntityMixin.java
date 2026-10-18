@@ -13,8 +13,8 @@ public class CreeperEntityMixin extends EntityMixin {
     int fuseTime;
 
     @Override
-    public boolean dynamiclight_shouldAddToLightSource() {
-        return fuseTime > 0 || super.dynamiclight_shouldAddToLightSource();
+    public boolean dynamiclight_shouldAdd() {
+        return fuseTime > 0 || super.dynamiclight_shouldAdd();
     }
 
     @Override

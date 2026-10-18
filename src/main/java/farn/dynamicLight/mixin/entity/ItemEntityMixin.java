@@ -15,9 +15,9 @@ public class ItemEntityMixin extends EntityMixin {
     public ItemStack stack;
 
     @Override
-    public boolean dynamiclight_shouldAddToLightSource() {
+    public boolean dynamiclight_shouldAdd() {
         return stack != null && LightDatas.INSTANCE.isEnabled(stack.itemId)
-                || super.dynamiclight_shouldAddToLightSource();
+                || super.dynamiclight_shouldAdd();
     }
 
     @Override

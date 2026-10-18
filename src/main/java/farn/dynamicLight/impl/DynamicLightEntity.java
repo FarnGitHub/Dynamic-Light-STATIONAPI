@@ -4,7 +4,7 @@ import farn.dynamicLight.world.light_source.LightSource;
 
 public interface DynamicLightEntity {
 
-    default boolean dynamiclight_shouldAddToLightSource() {
+    default boolean dynamiclight_shouldAdd() {
         return false;
     }
 
