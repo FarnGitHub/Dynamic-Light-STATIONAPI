@@ -8,12 +8,15 @@ import net.minecraft.world.World;
 
 import java.util.*;
 
-public enum WorldTick {
-    INST;
+public class WorldTick {
+    public static final WorldTick INST = new WorldTick();
 
     private int tick;
     private final Int2ObjectMap<LightSource> id2lightSources = new Int2ObjectOpenHashMap<>(128);
     private World world;
+
+    private WorldTick() {
+    }
 
     public void setWorld(World world) {
         this.world = world;

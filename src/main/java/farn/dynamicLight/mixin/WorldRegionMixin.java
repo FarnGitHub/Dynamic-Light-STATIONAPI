@@ -8,12 +8,20 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(WorldRegion.class)
-public abstract class WorldRegionMixin {
+public class WorldRegionMixin {
 
-    @WrapOperation(method={"getNaturalBrightness", "method_1782"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/WorldRegion;getRawBrightness(III)I"))
-    public int dynamiclight_getLightLevel(WorldRegion world, int x, int y, int z, Operation<Integer> original) {
-        int lightValue  = original.call(world, x,y,z);
-        int torchLight = DynamicLightEngine.INST.getBrightness(x, y, z, lightValue);
-        return Math.max(lightValue, torchLight);
+    @WrapOperation(
+            method={"getNaturalBrightness", "method_1782"},
+            at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/world/WorldRegion;getRawBrightness(III)I")
+    )
+    public int dynamicLight_getLightLevel(
+            WorldRegion world, int x, int y, int z, Operation<Integer> original
+    ) {
+        int lightLevel  = original.call(world, x,y,z);
+        int torchLight = DynamicLightEngine.INST.getBrightness(
+                world, x, y, z, lightLevel
+        );
+        return Math.max(lightLevel, torchLight);
     }
 }

@@ -1,13 +1,15 @@
 package farn.dynamicLight.world.tick;
 
 import farn.dynamicLight.world.light_source.LightSource;
+import net.minecraft.block.Block;
 import net.minecraft.util.math.Vec3i;
+import net.minecraft.world.BlockView;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public enum DynamicLightEngine {
-	INST;
+public class DynamicLightEngine {
+	public static final DynamicLightEngine INST = new DynamicLightEngine();
 
 	public final int DEFAULT_SIZE = 128;
 
@@ -15,7 +17,7 @@ public enum DynamicLightEngine {
 	private LookupEntry[] lookups = new LookupEntry[DEFAULT_SIZE];
 	private int[] startIndices = new int[DEFAULT_SIZE];
 
-	DynamicLightEngine() {
+	private DynamicLightEngine() {
 		CELL_OFFSETS = new Vec3i[27];
 		int i = 0;
 
@@ -29,11 +31,13 @@ public enum DynamicLightEngine {
 		}
 	}
 
-	public int getBrightness(int x, int y, int z, int light)
-	{
-		int cX = positionToCell(x);
-		int cY = positionToCell(y);
-		int cZ = positionToCell(z);
+	public int getBrightness(BlockView view, int x, int y, int z, int light) {
+		int blockId = view.getBlockId(x, y, z);
+		if(blockId > 0 && Block.BLOCKS[blockId].isFullCube()) return light;
+
+		int cX = posToCell(x);
+		int cY = posToCell(y);
+		int cZ = posToCell(z);
 		for(Vec3i v : CELL_OFFSETS) {
 			int hash = hashCell(cX+v.x, cY+v.y, cZ+v.z);
 			int start = startIndices[hash];
@@ -54,13 +58,13 @@ public enum DynamicLightEngine {
 	}
 
 	private int hashAt(int x, int y, int z) {
-		return hashCell(positionToCell(x), positionToCell(y), positionToCell(z));
+		return hashCell(posToCell(x), posToCell(y), posToCell(z));
 	}
 	private int hashAt(LightSource source) {
 		return hashAt(source.iX, source.iY, source.iZ);
 	}
 
-	private int positionToCell(int coordinate) {
+	private int posToCell(int coordinate) {
 		return coordinate >> 3;
 	}
 

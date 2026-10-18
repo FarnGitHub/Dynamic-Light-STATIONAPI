@@ -1,12 +1,9 @@
 package farn.dynamicLight;
 
 import farn.dynamicLight.config.DynamicLightConfig;
-import net.fabricmc.loader.api.FabricLoader;
 import net.mine_diver.unsafeevents.listener.EventListener;
-import net.modificationstation.stationapi.api.event.mod.InitEvent;
 import net.modificationstation.stationapi.api.event.resource.DataResourceReloaderRegisterEvent;
 import net.modificationstation.stationapi.api.mod.entrypoint.Entrypoint;
-import net.modificationstation.stationapi.api.mod.entrypoint.EntrypointManager;
 import net.modificationstation.stationapi.api.util.Namespace;
 import net.modificationstation.stationapi.api.util.Null;
 import org.apache.logging.log4j.Logger;
@@ -18,11 +15,6 @@ public class DynamicLight {
 
     @Entrypoint.Logger
     public static Logger LOGGER = Null.get();
-
-    @EventListener
-    public void initFinished(InitEvent e) {
-        FabricLoader.getInstance().getEntrypointContainers("dynamic_light:before_init", Object.class).forEach(EntrypointManager::setup);
-    }
 
     @EventListener
     public void registerReloader(DataResourceReloaderRegisterEvent event) {
