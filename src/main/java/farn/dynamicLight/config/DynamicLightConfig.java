@@ -29,7 +29,7 @@ public enum DynamicLightConfig {
 
         try (FileInputStream in = new FileInputStream(CFG_FILE)) {
             PROP.load(in);
-            for(LightData info : LightDatas.INSTANCE.valuesView()) {
+            for(LightData info : LightDatas.INSTANCE.values()) {
                 info.enabled = PROP.getProperty(info.identifier, "true").equals("true");
             }
         } catch (IOException ignored) {
@@ -42,7 +42,7 @@ public enum DynamicLightConfig {
 
     public void write() {
         try (FileOutputStream out = new FileOutputStream(CFG_FILE)) {
-            for(LightData info : LightDatas.INSTANCE.valuesView()) {
+            for(LightData info : LightDatas.INSTANCE.values()) {
                 PROP.setProperty(info.identifier, info.enabled + "");
             }
             PROP.store(out, "Dynamic Light Config");
@@ -77,12 +77,6 @@ public enum DynamicLightConfig {
                     DynamicLight.LOGGER.error("Failed to parse {} : {}", entry.getKey(), e.getMessage());
                 }
                 if(data == null || data.getItem() == null) continue;
-                data.enabled = true;
-                try {
-                    data.itemNames = data.getItem().getTranslatedName();
-                } catch (Exception e) {
-                    data.itemNames = data.identifier;
-                }
                 DynamicLight.LOGGER.info("Add Dynamic light from {}", entry.getKey());
                 LightDatas.INSTANCE.add(data.getItem().id, data);
             }

@@ -20,7 +20,7 @@ public class PlayerLightSource extends LightSource {
         if (itemId != this.currentItemID){
             this.currentItemID = itemId;
             LightData data = LightDatas.INSTANCE.of(itemId);
-            if (data != null && data.enabled) {
+            if (data != null) {
                 this.setBrightness(data.brightness);
                 this.setWorkUnderWater(data.underwater);
                 this.setLit(true);

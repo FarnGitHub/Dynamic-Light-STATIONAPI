@@ -51,7 +51,7 @@ public class ConfigScreen extends Screen{
     }
 
     private class ItemLightInfoEntry extends EntryListWidget {
-        private final List<LightData> datas = new ArrayList<>(LightDatas.INSTANCE.valuesView());
+        private final List<LightData> datas = new ArrayList<>(LightDatas.INSTANCE.values());
 
         public ItemLightInfoEntry() {
             super(Minecraft.INSTANCE, ConfigScreen.this.width, ConfigScreen.this.height, 8, ConfigScreen.this.height - 55 + 4, 24);
@@ -81,7 +81,7 @@ public class ConfigScreen extends Screen{
         @Override
         protected void renderEntry(int index, int x, int y, int i, Tessellator tessellator) {
             LightData test = datas.get(index);
-            String lmo = test.itemNames;
+            String lmo = TranslationStorage.getInstance().get(test.getTranslatedNames());
             ConfigScreen.this.textRenderer.draw(lmo, x, y + (itemHeight / 4), 14737632);
             this.renderButton(ConfigScreen.this.width / 2 + 80, y + (itemHeight / 4) - 5, test);
         }

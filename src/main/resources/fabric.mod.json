@@ -21,7 +21,8 @@
   },
   "accessWidener": "dynamiclight.classTweaker",
   "mixins": [
-    "dynamiclight.mixins.json"
+    "dynamiclight.mixins.json",
+    "dynamiclight.entity.mixins.json"
   ],
   "depends": {
     "minecraft": "1.0.0-beta.7.3",

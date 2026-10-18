@@ -10,12 +10,19 @@ public class LightData {
     public String identifier;
     public int brightness;
     public boolean underwater;
-    @Expose(deserialize = false, serialize = false)
-    public boolean enabled = true;
-    @Expose(deserialize = false, serialize = false)
-    public String itemNames;
+
+    @Expose(serialize = false, deserialize = false)
+    public boolean enabled;
 
     public Item getItem() {
         return ItemRegistry.INSTANCE.get(Identifier.of(identifier));
     }
+
+    public String getTranslatedNames() {
+        Item item = getItem();
+        return item != null ?
+                item.getTranslationKey()
+                : identifier;
+    }
+
 }

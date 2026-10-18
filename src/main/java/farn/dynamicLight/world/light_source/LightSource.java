@@ -5,7 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 
 public class LightSource{
-	boolean isLit = false;
+	private boolean isLit = false;
 	public double posX;
 	public double posY;
 	public double posZ;
@@ -21,6 +21,11 @@ public class LightSource{
     public LightSource(Entity entity) {
 		target = entity;
     }
+
+	public LightSource(Entity entity, boolean lit) {
+		this(entity);
+		this.isLit = lit;
+	}
 
 	public void tick() {
 		if (this.active()) {

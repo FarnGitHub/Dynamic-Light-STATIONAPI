@@ -14,6 +14,14 @@ public final class LightDatas {
         return lightMap.get(id);
     }
 
+    public boolean isEnabled(LightData lightData) {
+        return lightData != null && lightData.enabled;
+    }
+
+    public boolean isEnabled(int id) {
+        return isEnabled(of(id));
+    }
+
     public void add(int id, LightData info) {
         lightMap.put(id, info);
     }
@@ -22,7 +30,7 @@ public final class LightDatas {
         lightMap.clear();
     }
 
-    public Collection<LightData> valuesView() {
+    public Collection<LightData> values() {
         return lightMap.values();
     }
 
