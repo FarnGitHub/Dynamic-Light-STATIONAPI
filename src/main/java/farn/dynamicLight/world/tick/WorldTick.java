@@ -8,7 +8,7 @@ import net.minecraft.world.World;
 
 import java.util.*;
 
-public class WorldTick {
+public final class WorldTick {
     public static final WorldTick INST = new WorldTick();
 
     private int tick;

@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class DynamicLightEngine {
+public final class DynamicLightEngine {
 	public static final DynamicLightEngine INST = new DynamicLightEngine();
 
 	public final int DEFAULT_SIZE = 128;
