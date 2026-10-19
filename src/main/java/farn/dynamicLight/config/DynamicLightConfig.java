@@ -16,7 +16,7 @@ import java.io.*;
 import java.util.Map;
 import java.util.Properties;
 
-public class DynamicLightConfig {
+public final class DynamicLightConfig {
 
     private final Properties PROP = new Properties();
     public final File CFG_FILE = new File(FabricLoader.getInstance().getConfigDir().toString(), "dynamic_light_enables.cfg");
